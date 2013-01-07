@@ -1,0 +1,13 @@
+#summary One-sentence summary of this page.
+
+= Introduction =
+
+This is the file that load's the config files, changes stuff insed the game. this is in early 'PRE_ALPHA' and will be more usefull later. 
+
+
+= Details =
+
+This are the stuff that is working:
+
+ * Load config file using .cfg using ConfigFile.h
+ * etc.
