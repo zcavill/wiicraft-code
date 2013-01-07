@@ -11,3 +11,11 @@ This are the stuff that is working:
 
  * Load config file using .cfg using ConfigFile.h
  * etc.
+
+= Functions =
+<code language="C++">
+API(); //Constructor
+~API(); //Destructor
+void initAPI(int usingSD); //Inits the API.
+void stopAPI(); //Stops the API (not needed to run at the moment)
+</code>
