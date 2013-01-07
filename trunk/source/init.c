@@ -14,7 +14,7 @@ void Initialize(void){
 	GRRLIB_GeckoInit();
 	DebugStart(true, "sd://wiicraft.log");
 	Debug("-------------------[Wiicraft Debug]----------------------");
-	gprintf("Done With init()\n");
+	Debug("Done With DebugStart\n");
 	#endif
 
 	ASND_Init();
