@@ -1,4 +1,4 @@
-#summary One-sentence summary of this page.
+#Place all Classes and functions you have made here.
 
 = Classes: =
 ||block.h   || Here will the block goes. ||
