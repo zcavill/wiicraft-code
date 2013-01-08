@@ -22,13 +22,14 @@ void InitPad()
 	WPAD_Init();
 	WPAD_SetDataFormat(WPAD_CHAN_0, WPAD_FMT_BTNS_ACC_IR);
 	WPAD_SetVRes(WPAD_CHAN_ALL, rmode->fbWidth, rmode->xfbHeight);
-	WPAD_Probe(0, &expansion_type);	
+	WPAD_SetIdleTimeout(60 * 1.5); // Remote will turn off after 1.5 minutes of inactivity.
+	WPAD_Probe(0, &expansion_type);
 }
 
 void UpdatePad()
 {
 	WPAD_ScanPads();
-	WPAD_Probe(0, &expansion_type);	
+	WPAD_Probe(0, &expansion_type);
 	wmote_data = WPAD_Data(0);
 	js = &wmote_data->exp.nunchuk.js;
 	pressed = WPAD_ButtonsHeld(0);
@@ -92,7 +93,7 @@ void InitVideo()
 	GX_SetVtxDesc(GX_VA_TEX0, GX_NONE);
 
 	GX_SetNumChans(1);
-	
+
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_POS, GX_POS_XYZ, GX_F32, 0);
 	GX_SetVtxAttrFmt(GX_VTXFMT0, GX_VA_CLR0, GX_CLR_RGBA, GX_RGBA8, 0);
 
@@ -101,24 +102,24 @@ void InitVideo()
 	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
 
 	GX_SetBlendMode(GX_BM_BLEND, GX_BL_SRCALPHA, GX_BL_INVSRCALPHA, GX_LO_CLEAR);
-	GX_SetAlphaUpdate(GX_TRUE);	
-	
+	GX_SetAlphaUpdate(GX_TRUE);
+
 	GX_SetCullMode(GX_CULL_NONE);
 	GX_SetColorUpdate(GX_TRUE);
-	
-	
+
+
     f32 w = rmode->viWidth;
-    f32 h = rmode->viHeight;	
+    f32 h = rmode->viHeight;
 	guPerspective(projection, 45, (f32)w/(f32)h, 0.1F, 300.0F);
 	GX_LoadProjectionMtx(projection, GX_PERSPECTIVE);
-	
-	
+
+
 	GX_SetLineWidth(25, GX_TO_ZERO);
-	
+
 	guMtxIdentity(model);
-	
+
 	 GX_InvalidateTexAll();
-	
+
 	//console
 		console_init(xfb[0],20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
 
@@ -147,8 +148,8 @@ void SwapBuffer()
 
 
 void DrawCube(float x, float y, float z)  //THIS IS A PROVISIONAL SHITTY FUNCTION, JUST TESTING
-{	
-	
+{
+
 	GX_Begin(GX_QUADS, GX_VTXFMT0, 24);			// Draw a Cube
 
 	GX_Position3f32( x + 1.0f, y+1.0f,-1.0f + z);	// Top Left of the quad (top)
@@ -202,19 +203,19 @@ void DrawCube(float x, float y, float z)  //THIS IS A PROVISIONAL SHITTY FUNCTIO
 	GX_Color3f32(1.0f,0.0f,1.0f);			// Set The Color To Violet
 	GX_Position3f32(x +  1.0f,y+-1.0f, 1.0f + z);	// Bottom Left Of The Quad (Right)
 	GX_Color3f32(1.0f,0.0f,1.0f);			// Set The Color To Violet
-	GX_Position3f32(x +  1.0f,y+-1.0f,-1.0f + z);	// Bottom Right Of The Quad (Right)		
+	GX_Position3f32(x +  1.0f,y+-1.0f,-1.0f + z);	// Bottom Right Of The Quad (Right)
 	GX_Color3f32(1.0f,0.0f,1.0f);			// Set The Color To Violet
 
 	GX_End();									// Done Drawing The Quad
 }
 
 void DrawCubeWire(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z)
-{	
+{
 	int x = chunk_x * CHUNK_TOTAL_SIZE + block_x * BLOCK_SIZE;
 	int y = chunk_y * CHUNK_TOTAL_SIZE + block_y * BLOCK_SIZE;
 	int z = chunk_z * CHUNK_TOTAL_SIZE + block_z * BLOCK_SIZE;
 	#define wire_size BLOCK_SIZE + 0.025
-	
+
 	GX_Begin(GX_LINESTRIP, GX_VTXFMT0, 30);
 
 		GX_Position3f32(x, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);
@@ -222,37 +223,37 @@ void DrawCubeWire(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_
 		GX_Position3f32(x + wire_size, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);
 				GX_Position3f32(x, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);
-				
+
 		GX_Position3f32(x, y, z); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x + wire_size, y, z); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x + wire_size, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);
-		GX_Position3f32(x, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);	
+		GX_Position3f32(x, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);
 				GX_Position3f32(x, y, z); GX_Color4u8(255, 255, 255, 255);
-		
+
 		GX_Position3f32(x + wire_size, y, z); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x + wire_size, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);
-		GX_Position3f32(x + wire_size, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);				
-		GX_Position3f32(x + wire_size, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);	
+		GX_Position3f32(x + wire_size, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);
+		GX_Position3f32(x + wire_size, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);
 				GX_Position3f32(x + wire_size, y, z); GX_Color4u8(255, 255, 255, 255);
-		
+
 		GX_Position3f32(x, y, z); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);
-		GX_Position3f32(x, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);			
-		GX_Position3f32(x, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);	
+		GX_Position3f32(x, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);
+		GX_Position3f32(x, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);
 				GX_Position3f32(x, y, z); GX_Color4u8(255, 255, 255, 255);
-		
+
 		GX_Position3f32(x, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x + wire_size, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x + wire_size, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);
-		GX_Position3f32(x, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);	
-				GX_Position3f32(x, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);		
-		
+		GX_Position3f32(x, y + wire_size, z + wire_size); GX_Color4u8(255, 255, 255, 255);
+				GX_Position3f32(x, y, z + wire_size); GX_Color4u8(255, 255, 255, 255);
+
 		GX_Position3f32(x, y, z); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x + wire_size, y, z); GX_Color4u8(255, 255, 255, 255);
 		GX_Position3f32(x + wire_size, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);
-		GX_Position3f32(x, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);	
+		GX_Position3f32(x, y + wire_size, z); GX_Color4u8(255, 255, 255, 255);
 				GX_Position3f32(x, y, z); GX_Color4u8(255, 255, 255, 255);
-		
+
 	GX_End();
 }
 
@@ -281,4 +282,4 @@ void DrawCubeWire(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_
             lastTime = getTime();
         }
     }
-    
+
