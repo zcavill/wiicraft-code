@@ -22,10 +22,11 @@ set file=%1
 goto debug
 
 :setdefault
-:: Make sure minecraft-wii-edition.elf exists
-if not exist minecraft-wii-edition.elf (echo Error: minecraft-wii-edition.elf does not exist! & echo Try dragging-and-dropping an elf file onto Debug.bat & goto eof)
-:: Set minecraft-wii-edition.elf as the file to debug
-set file=minecraft-wii-edition.elf
+:: The default file is the name of the folder that Debug.bat is stored in
+for %%A in ("%cd%") do set file=%%~nA.elf
+set file=%cd%\%file%
+:: Make sure it exists, otherwise throw error
+if not exist %file% (echo Error: %file% does not exist! & echo Try dragging-and-dropping an elf file onto Debug.bat & goto eof)
 
 :debug
 echo Type "info line *0x#", replacing # with the stack dump entry
