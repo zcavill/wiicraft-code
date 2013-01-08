@@ -15,20 +15,16 @@
 
 using namespace std;
 
-void initFolders(bool SD){
-	
-	int status;
-	
-	if(SD){
-		status = mkdir("sd:/Wiicraft", 0777);
-	}
-	//else
-		status = mkdir("usb:/Wiicraft", 0777);
-	
+int initFolders(bool SD){
+
+	if(SD)
+		return mkdir("sd:/Wiicraft", 0777);
+	else
+		return mkdir("usb:/Wiicraft", 0777);
 }
 
-void registerBlockToAddOnScreen(float x,float y,float z){
-	
+void registerBlockToAddOnScreen(float x,float y,float z) {
+
 	DrawCube(x,y,z);
-	
+
 }
