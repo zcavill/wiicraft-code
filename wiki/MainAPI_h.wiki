@@ -15,5 +15,9 @@ This are the stuff that is working:
 API(); //Constructor
 ~API(); //Destructor
 void initAPI(int usingSD); //Inits the API.
-void stopAPI(); //Stops the API (not needed to run at the moment)
-</code>
+void stopAPI(); //Stops the API (not needed to run at the moment)</code>
+
+= Defines =
+
+<code language="C++">
+#define APIVERISON "02" //Type: String</code>
