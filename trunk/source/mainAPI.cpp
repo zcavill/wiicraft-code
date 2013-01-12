@@ -1,6 +1,6 @@
 /*
 
-	(c)Mojang AB And Filiph Sandström
+	(c)Mojang AB And Filiph SandstrÃ¶m
 
 									*/
 
@@ -36,6 +36,9 @@ API::~API(){
 }
 
 void API::initAPI(int usingSD) {
+	
+	fatInitDefault();
+	
 	//initFolders(usingSD);
 	
 	if(usingSD == 1){
