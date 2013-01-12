@@ -1,12 +1,13 @@
 /*									
 
-	(c)Mojang AB And Filiph Sandström
+	(c)Filiph SandstrÃ¶m. ETC.
 									
 									*/
 #ifndef mainAPI_H
 #define mainAPI_H
 
 #define APIVERISON "01"
+#define APILANGUE "LUA"
 
 #include <iostream>
 #include <fstream>
