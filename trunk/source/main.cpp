@@ -233,6 +233,9 @@ void checkupdate() {
 int main(int argc, char *argv[])  {
 	// In the event of a code dump, the app will exit after 10 seconds (unless you press POWER)
 	__exception_setreload(10);
+	
+	fatInitDefault();
+	
 	int useSD;
 	
 	
@@ -250,8 +253,8 @@ int main(int argc, char *argv[])  {
 	//if(!(useSD ==3)){
 		sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
 		if(test == 115){ useSD = 1; } //first character = s
-		if(test == 117){ useSD = 2; } //first character = u
-		//if(test == 0){ useSD = 3; } //first character = NULL
+		else if(test == 117){ useSD = 2; } //first character = u
+		else{ useSD = 3; } //first character = NULL
 	//}
 	
 	//Init's that's can't be made in c:
