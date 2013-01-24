@@ -42,6 +42,8 @@ class API {
 		//Public valuse:
 		bool existsAPI;
 		bool existsTEXTURES;
+		bool existsLUA;
+		string LUAPATH;
 };
 
 

@@ -37,50 +37,44 @@ API::~API(){
 
 void API::initAPI(int usingSD) {
 	
-	fatInitDefault();
-	
-	//initFolders(usingSD);
+	int folders = initFolders(usingSD);
 	
 	if(usingSD == 1){
-		ConfigFile cfg("sd:/APPS/Minecraft_Wii_Edition/config.cfg");
+		ConfigFile cfg("sd:/APPS/WiiCraft/config.cfg");
 		
 		existsAPI = cfg.keyExists("API");
-		bool existsADDBLOCKS = cfg.keyExists("ADDBLOCKS");
-		string ADDBLOCKSPATH = cfg.getValueOfKey<string>("ADDBLOCKSPATH");
+		existsLUA = cfg.keyExists("LUA");
+		LUAPATH = cfg.getValueOfKey<string>("LUAPATH");
 		existsTEXTURES = cfg.keyExists("TEXTURES");
-		string APIver = cfg.getValueOfKey<string>("API");
 		
+	} else if(usingSD == 2) {
+		ConfigFile cfg("usb:/APPS/WiiCraft/config.cfg");
+		
+		existsAPI = cfg.keyExists("API");
+		existsLUA = cfg.keyExists("LUA");
+		LUAPATH = cfg.getValueOfKey<string>("LUAPATH");
+		existsTEXTURES = cfg.keyExists("TEXTURES");
+		
+	} else if(usingSD == 3) {
+		//ConfigFile cfg("sd:/APPS/WiiCraft/config.cfg");
+		
+		existsAPI = true;			//cfg.keyExists("API");
+		existsLUA = true;  		 	//cfg.keyExists("LUA");
+		LUAPATH = "APPS/Wiicraft";  //cfg.getValueOfKey<string>("LUAPATH");
+		existsTEXTURES = false;		//cfg.keyExists("TEXTURES");
+	}
+	
 		//=================================
-		if(existsADDBLOCKS){
-		string path;
-			if (usingSD) path = "sd:/";
-			else path = "usb:/";
-		path += ADDBLOCKSPATH;
-		ConfigFile blocksTooAdd(path);
-			
-			float x = blocksTooAdd.getValueOfKey<float>("X");
-			float y = blocksTooAdd.getValueOfKey<float>("Y");
-			float z = blocksTooAdd.getValueOfKey<float>("Z");
-			
-			registerBlockToAddOnScreen(x,y,z);
+		if(existsLUA){
+			string path;
+			if (usingSD == 1)
+				path = "sd:/";
+			else
+				path = "usb:/";
+			path += LUAPATH;
 			
 		}
 		//=================================
-		
-	} else if(usingSD == 2) {
-		ConfigFile cfg("usb:/APPS/Minecraft_Wii_Edition/config.cfg");
-		
-		existsAPI = cfg.keyExists("API");
-		existsTEXTURES = cfg.keyExists("TEXTURES");
-		string APIver = cfg.getValueOfKey<string>("API");
-	} else if(usingSD == 3) {
-		ConfigFile cfg("sd:/APPS/Minecraft_Wii_Edition/config.cfg");
-		
-		existsAPI = cfg.keyExists("API");
-		existsTEXTURES = cfg.keyExists("TEXTURES");
-		string APIver = cfg.getValueOfKey<string>("API");
-	}
-	
 	
 	//existsAPI = cfg.keyExists("API");
 	//existsTEXTURES = cfg.keyExists("TEXTURES");
