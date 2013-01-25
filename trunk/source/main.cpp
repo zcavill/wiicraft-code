@@ -1,6 +1,6 @@
 /*
 
-	(c)Mojang AB And Filiph Sandström
+	(c)Filiph Sandström & and some members... XD
 
 									*/
 
@@ -26,6 +26,9 @@ Remove Thumbs.db!
 #include <fstream>
 #include <asndlib.h>
 #include <mp3player.h>
+#include <sdcard/wiisd_io.h>
+#include <png.h>
+#include <pngu.h>
 
 //#include <sys/stat.h>
 //#include <time.h>
@@ -48,9 +51,13 @@ Remove Thumbs.db!
 #include "debug.h"
 #include "init.h"
 #include "mainAPI.h"
+#include "Image.hpp"
 #include "utils.h"
-#include "World.h"
-#include "sicksaxis.h"
+#include "World.hpp"
+#include "Camera.hpp"
+#include "Player.hpp"
+#include "World.hpp"
+
 //#include "NETWORK_SERVER.H"
 //#include "minecraft.h"
 
@@ -59,15 +66,8 @@ Remove Thumbs.db!
 //#include "gfx/BMfont5.h"
 
 //Images:
-//#include "terrain_png.h"
-//#include "gfx/mojang.h"
-//#include "gfx/pointer1.h"
-//#include "gfx/pointer2.h"
-//#include "gfx/pointer3.h"
-//#include "gfx/pointer4.h"
-//#include "gfx/grrlib_logo.h"
-//#include "gfx/panorama4.h"
-
+#include "grass_png.h"
+#include "stone_png.h"
 //Music:
 //#include "calm1_mp3.h"
 //#include "calm2_mp3.h"
@@ -109,9 +109,8 @@ Remove Thumbs.db!
 
 World world;
 
-void MoveCamera();
 void UpdateCamera();
-void UpdatePlayer();
+void MoveCamera();
 
 //Server:
 //#define CLIENT_PORT 19135
@@ -235,6 +234,11 @@ int main(int argc, char *argv[])  {
 	__exception_setreload(10);
 	
 	fatInitDefault();
+	fatMountSimple("sd", &__io_wiisd);
+	WPAD_Init();
+	InitVideo();
+	InitPad();
+	initFPS();
 	
 	int useSD;
 	
@@ -302,190 +306,148 @@ int main(int argc, char *argv[])  {
 		//ToDO
 	}
 
-	//-------------------------------------------------
-	//Server
-	//-------------------------------------------------
-
-
-
-	//-------------------------------------------------
-	//Server
-	//-------------------------------------------------
-
 	//Gets the IR positions
 	WPAD_IR(WPAD_CHAN_1, &ir1);
 	//WPAD_IR(WPAD_CHAN_2, &ir2);
 	//WPAD_IR(WPAD_CHAN_3, &ir3);
 	//WPAD_IR(WPAD_CHAN_4, &ir4);
 
-		MP3Player_PlayBuffer(calm3_mp3, calm3_mp3_size, NULL);
-	//Menu
-	while(1){
+	//MP3Player_PlayBuffer(calm3_mp3, calm3_mp3_size, NULL);
 	
-		break;
-	}
+	Image grass((uint8_t *)grass_png);
+	Image stone((uint8_t *)stone_png);
 	
 	while(1){
 		Clean();
-		UpdatePad();	
-		
-		//printf("USB: %s\n", argv[0]);
-		
+		UpdatePad();
 		printf("FPS: %f\n", fps);
 		printf("posx: %f   posy: %f  posz: %f\n", world.player->position.x, world.player->position.y, world.player->position.z);
 		printf("pitch: %f   yaw: %f\n", world.player->pitch, world.player->yaw);
-		//if(expansion_type == WPAD_EXP_NUNCHUK)
-			//printf("sin: %f   cos: %f", sin(DegToRad(NunchukAngle(js->ang))), cos(DegToRad(NunchukAngle(js->ang))));		
-		printf("\n");
-		
+		printf("size: %i\n", world.chunkHandler->chunkList.size());
 		
 		printf("chunkX: %i  chunkY: %i  chunkZ: %i\n", world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
-		printf("blockX: %i  blockY: %i  blockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);
+		printf("blockX: %i  blockY: %i  blockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
+		printf("player status: %s  velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
+
+
+		grass.setGX(GX_TEXMAP0);
+		DrawCubeTex(0,0,-5);
+		
+		world.update();
+		world.drawChunks();
+
+			
 
 		MoveCamera();
-		UpdatePlayer();		
-		world.update();
-		
-		world.updateViewMatrix();
-		guMtxConcat(world.getViewMarix(), model, modelview);
-		GX_LoadPosMtxImm(modelview, GX_PNMTX0);	
-		
-		
-		world.drawWorld();
-		
-
+		UpdateCamera();
 		SwapBuffer();
 		FPS(&fps);
-		if (pressed & WPAD_BUTTON_HOME ) break;
-		//if (pressed & WPAD_BUTTON_1 ) {world.player->camera->translate(0.0f, 0.0f, 0.0f);}
-		//if (pressed & WPAD_BUTTON_2 ) {guMtxIdentity(world.player->camera->matrix); world.player->camera->matrix[3][3] = 1.0f;}
+		if (pressed & WPAD_BUTTON_HOME ) exit(0);
 	}
 	
+	
 	WIILIGHT_TurnOn();
-	
-	WPAD_Shutdown();
-	
+	EndVideo();
 	mainAPI.stopAPI();
 	#ifdef USBGECKO
 	Debug("stopAPI Passed");
 	#endif
-	
 	Deinitialize();
-	
+	WPAD_Shutdown();
 	WIILIGHT_TurnOff();
 	
 	exit(0);
 }
 
-void UpdatePlayer()
-{
-	
-	//DrawCubeWire(world.player->chunk_x, world.player->chunk_y, world.player->chunk_z,
-				// world.player->block_x, world.player->block_y, world.player->block_z);
-	
-	//Block *bp = world.playerBlock();
-	//Chunk *cp = world.playerChunk();
-	
-	/*if(pressed & WPAD_BUTTON_A)
-	{
-		if(cp != NULL)
-		{
-			if(bp != NULL)
-			{
-				bp->transparent = true;
-				world.chunkHandler->generateMesh(world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
-			}
-		}	
-	}
-
-	if(pressed & WPAD_BUTTON_B)
-	{
-		if(cp != NULL)
-		{
-			if(bp != NULL)
-			{
-				bp->transparent = false;
-				world.chunkHandler->generateMesh(world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
-			}
-		}
-	}*/
-	
-}
-
 void MoveCamera()
 {
-	if(expansion_type == WPAD_EXP_NUNCHUK)
+	/*if(expansion_type == WPAD_EXP_NUNCHUK)
 	{
 		if(js->mag >= 0.2f)
 		{
 			float n_angle = DegToRad(NunchukAngle(js->ang));
-			
-			world.player->move( cos(n_angle)*js->mag / 2.0f, world.player->camera->getRightVector());
-			world.player->move(-sin(n_angle)*js->mag / 2.0f,  world.player->camera->getForwardVector());
-			
+			world.player->move( cos(n_angle)*js->mag / 5.0f, world.player->camera->getRightVector());
+			world.player->move(-sin(n_angle)*js->mag / 5.0f, world.player->camera->getForwardVector());	
 		}
+	}*/
+	Chunk *cp;
+	Block *bp;
+	
+		/*cp = chunkHandler->chunkList[getWorldIndex(world.player->chunk_x, world.player->chunk_y, world.player->chunk_z)];
+		cp = cp->rightNeighbour;
+		bp = cp->blockList[3][0][0];
+		bp->transparent = true;
+		cp->needsUpdate = true;*/
+	
+	if(pressed & WPAD_BUTTON_A)
+	{
+		cp = world.chunkHandler->chunkList[getWorldIndex(world.player->chunk_x, world.player->chunk_y, world.player->chunk_z)];
+		bp = cp->blockList[world.player->block_z][world.player->block_y][world.player->block_x];
+		bp->transparent = true;
+		cp->needsUpdate = true;
+		if(world.player->block_x == 0)
+			world.chunkHandler->setChunkToUpdate(cp->leftNeighbour);
+		if(world.player->block_x == (CHUNK_SIZE-1))
+			world.chunkHandler->setChunkToUpdate(cp->rightNeighbour);
+		if(world.player->block_y == 0)
+			world.chunkHandler->setChunkToUpdate(cp->downNeighbour);
+		if(world.player->block_y == (CHUNK_SIZE-1))
+			world.chunkHandler->setChunkToUpdate(cp->upNeighbour);
+		if(world.player->block_z == 0)
+			world.chunkHandler->setChunkToUpdate(cp->backNeighbour);
+		if(world.player->block_z == (CHUNK_SIZE-1))
+			world.chunkHandler->setChunkToUpdate(cp->frontNeighbour);
+	}
+
+
+	if(pressed & WPAD_BUTTON_B)
+	{
+		cp = world.chunkHandler->chunkList[getWorldIndex(world.player->chunk_x, world.player->chunk_y, world.player->chunk_z)];
+		bp = cp->blockList[world.player->block_z][world.player->block_y][world.player->block_x];
+		bp->transparent = false;
+		cp->needsUpdate = true;
+		if(world.player->block_x == 0)
+			world.chunkHandler->setChunkToUpdate(cp->leftNeighbour);
+		if(world.player->block_x == (CHUNK_SIZE-1))
+			world.chunkHandler->setChunkToUpdate(cp->rightNeighbour);
+		if(world.player->block_y == 0)
+			world.chunkHandler->setChunkToUpdate(cp->downNeighbour);
+		if(world.player->block_y == (CHUNK_SIZE-1))
+			world.chunkHandler->setChunkToUpdate(cp->upNeighbour);
+		if(world.player->block_z == 0)
+			world.chunkHandler->setChunkToUpdate(cp->backNeighbour);
+		if(world.player->block_z == (CHUNK_SIZE-1))
+			world.chunkHandler->setChunkToUpdate(cp->frontNeighbour);
 	}
 	
-	if(pressed & WPAD_NUNCHUK_BUTTON_C)
-		world.player->position.y += 0.5f;
+	
+	/*if(pressed & WPAD_NUNCHUK_BUTTON_C)
+		world.player->position.y += 0.25f;
 	if(pressed & WPAD_NUNCHUK_BUTTON_Z)
-		world.player->position.y -= 0.5f;
+		world.player->position.y -= 0.25f;
 		
 	if(pressed & WPAD_BUTTON_1)
-		world.player->position.y += 0.5f;
+		world.player->position.y += 0.25f;
 	if(pressed & WPAD_BUTTON_2)
-		world.player->position.y -= 0.5f;
+		world.player->position.y -= 0.25f;
 		
 	if(pressed & WPAD_BUTTON_UP)
-		world.player->pitch += 0.025f;
+		world.player->pitch += 0.02f;
 	if(pressed & WPAD_BUTTON_DOWN)
-		world.player->pitch -= 0.025f;
+		world.player->pitch -= 0.02f;
 		
 	if(pressed & WPAD_BUTTON_RIGHT)
-		world.player->yaw -= 0.025f;
+		world.player->yaw -= 0.02f;
 	if(pressed & WPAD_BUTTON_LEFT)
-		world.player->yaw += 0.025f;
+		world.player->yaw += 0.02f;*/
 		
-		
-	if(world.sickSaxis.connected)
-	{
-		int rx = world.sickSaxis.gamepad.rightAnalog.x - 128;
-		int ry = world.sickSaxis.gamepad.rightAnalog.y - 128;
-		int lx = world.sickSaxis.gamepad.leftAnalog.x - 128;
-		int ly = world.sickSaxis.gamepad.leftAnalog.y - 128;
-		
-		if(fabs(ry) > 20)
-		{
-			world.player->pitch -= ry /2000.0f;
-		}
-		if(fabs(rx) > 20)
-		{
-			world.player->yaw -= rx /2000.0f;
-		}	
-			
-		if(fabs(ly) > 20)
-		{
-			world.player->move( ly / 400.0f, world.player->camera->getForwardVector());
-		}
-		
-		if(fabs(lx) > 20)
-		{
-			world.player->move( lx / 400.0f, world.player->camera->getRightVector());
-		}	
-		
-		
-		
-		if(world.sickSaxis.gamepad.buttons.L2)
-			world.player->position.y += 0.25f;
-		if(world.sickSaxis.gamepad.buttons.R2)
-			world.player->position.y -= 0.25f;
-	}
 }
+
 
 void UpdateCamera()
 {
-	world.updateViewMatrix();
-	guMtxConcat(world.getViewMarix(), model, modelview);
-
+	guMtxConcat(world.getCameraView(), model, modelview);
 	GX_LoadPosMtxImm(modelview, GX_PNMTX0);
 }
+
+

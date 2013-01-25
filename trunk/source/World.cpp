@@ -1,171 +1,130 @@
-#include "World.h"
+#include "World.hpp"
 
 
 //Constructor
 	World::World()
 	{
-		ss_init();
-		ss_open(&sickSaxis);
-		
-		initPosition.x = WORLD_INIT_POS; initPosition.y = WORLD_INIT_POS; initPosition.z = WORLD_INIT_POS;
-		
-		//Player
-			player = new Player(viewMatrix, (initPosition.x + WORLD_SIZE * CHUNK_SIZE * BLOCK_SIZE)/2,
-											(initPosition.y + WORLD_SIZE * CHUNK_SIZE * BLOCK_SIZE)/2,
-											(initPosition.z + WORLD_SIZE * CHUNK_SIZE * BLOCK_SIZE)/2);
-		//Chunk handler
-			chunkHandler = new ChunkHandler(initPosition.x, initPosition.y, initPosition.z);
-											
-		
+		worldPosition.x = 0; worldPosition.y = 0; worldPosition.z = 0;
+	//ChunkHandler
+		chunkHandler = new ChunkHandler(&worldPosition);
+	//Player
+		player = new Player((MtxP)cameraView, WORLD_TOTAL_SIZE/2.0, WORLD_TOTAL_SIZE/2.0f + 6.0f, WORLD_TOTAL_SIZE/2.0);
 	}
 	
 //Destructor
 	World::~World()
 	{
-		delete player;
 		delete chunkHandler;
-		ss_close(&sickSaxis);
-		ss_finish();
+		delete player;
+	}
+
+//Methods
+	
+	void World::updateControls()
+	{
+		WPAD_ScanPads();
+		WPAD_Probe(0, &wiimoteExpansion);	
+		wiimoteData = WPAD_Data(0);
+		nunchukJoystick = &wiimoteData->exp.nunchuk.js;
 	}
 	
-//Methods
-
-	void World::drawWorld()
+	void World::movePlayer()
 	{
-		chunkHandler->draw();
-	}
-
-//Update
-	void World::update()
-	{
-		//Controls
-			worldButtonsDown = WPAD_ButtonsDown(0);
-		//Sicksaxis
-			if(!sickSaxis.connected)
+		if(wiimoteExpansion == WPAD_EXP_NUNCHUK)
+		{
+			if(wiimoteData->btns_h & WPAD_NUNCHUK_BUTTON_Z)
 			{
-				if((WPAD_ButtonsHeld(0) & WPAD_BUTTON_MINUS) && (WPAD_ButtonsHeld(0) & WPAD_BUTTON_PLUS))
+				if(player->status == ON_GROUND)
 				{
-					ss_open(&sickSaxis);
+					player->status = ON_AIR;
+					player->moveVelocity(250.0f, UP_VECTOR, 0.0004f);
 				}
 			}
-			else
+			if(nunchukJoystick->mag >= 0.2f)
 			{
-				ss_read(&sickSaxis);
+				float n_angle = DegToRad(NunchukAngle(nunchukJoystick->ang));
+				player->move( cos(n_angle)*nunchukJoystick->mag / 7.5f, player->camera->getRightVector());
+				player->move(-sin(n_angle)*nunchukJoystick->mag / 7.5f, player->camera->getForwardVector());	
 			}
-		//Player
-			playerAiming();
-			playerUpdate();		
-			player->update();				
-	}
+		}
 		
-//Player
-	void World::playerUpdate()
-	{
-		switch(player->status)
-		{
-		case ON_AIR:
-			player->move(GRAVITY_VALUE, UP_VECTOR);
-			if(chunkHandler->isSolid(player->chunk_x, player->chunk_y, player->chunk_z, player->block_x, player->block_y, player->block_z))
-			{
-				//Vertex32 blockPos = chunkHandler->getBlockPosition(player->chunk_x, player->chunk_y, player->chunk_z,
-																	   //player->block_x, player->block_y + 1, player->block_z);					
-				player->position.y += BLOCK_SIZE;
-				player->status = ON_GROUND;
-			}
-			break;
-			
-		case ON_GROUND:
-			if(!chunkHandler->isSolid(player->chunk_x, player->chunk_y, player->chunk_z, player->block_x, player->block_y - 1, player->block_z))
-			{
-				player->status = ON_AIR;
-			}
-			break;
-		default:
-			break;
-		}		
+		if(wiimoteData->btns_h & WPAD_BUTTON_UP)
+			player->pitch += 0.02f;
+		if(wiimoteData->btns_h & WPAD_BUTTON_DOWN)
+			player->pitch -= 0.02f;
+
+		if(wiimoteData->btns_h & WPAD_BUTTON_RIGHT)
+			player->yaw -= 0.02f;
+		if(wiimoteData->btns_h & WPAD_BUTTON_LEFT)
+			player->yaw += 0.02f;		
 	}
 
 
-	void World::playerAiming()
+	Block *World::getBlockUnderPlayer(Vertex32 *block_pos)
 	{
-		float cos_pitch = cosf(player->pitch);
-		float sin_pitch = sinf(player->pitch);
-		
-		float cos_yaw = cosf(-player->yaw - HALF_PI);
-		float sin_yaw = sinf(-player->yaw - HALF_PI);
-		
-		float x_ray = player->position.x;
-		float y_ray = player->position.y;
-		float z_ray = player->position.z;
-		
-		int ray_chunk_x, ray_chunk_y, ray_chunk_z, ray_block_x, ray_block_y, ray_block_z; 
-		
-		Block *playerB = playerBlock();
-		Chunk *rayChunk;
-		Block *rayBlock;
-		
-		float inc_x = cos_yaw * cos_pitch * AIM_CAST_STEP;
-		float inc_y = sin_pitch * AIM_CAST_STEP;
-		float inc_z = sin_yaw * cos_pitch * AIM_CAST_STEP;
-		
-		for(float i = 0; i < AIM_MAX_DISTANCE; i += AIM_CAST_STEP)
+		return chunkHandler->getChunkP(player->chunk_x, player->chunk_y, player->chunk_z)->
+		                     getBlockP(player->block_x, player->block_y, player->block_z);
+	}
+	
+	void World::getBlockBoundingBox(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z, BoundingBox *bBox)
+	{
+		if(bBox != NULL)
 		{
-			x_ray += inc_x;
-			y_ray += inc_y;
-			z_ray += inc_z;
-		
-			
-			ray_chunk_x = (int)((float)(x_ray - WORLD_INIT_POS) / (float)(CHUNK_TOTAL_SIZE));
-			ray_chunk_y = (int)((float)(y_ray - WORLD_INIT_POS) / (float)(CHUNK_TOTAL_SIZE));
-			ray_chunk_z = (int)((float)(z_ray - WORLD_INIT_POS) / (float)(CHUNK_TOTAL_SIZE));
-			ray_block_x = (int)((x_ray - ray_chunk_x * CHUNK_TOTAL_SIZE) / (float)BLOCK_SIZE);
-			ray_block_y = (int)((y_ray - ray_chunk_y * CHUNK_TOTAL_SIZE) / (float)BLOCK_SIZE);
-			ray_block_z = (int)((z_ray - ray_chunk_z * CHUNK_TOTAL_SIZE) / (float)BLOCK_SIZE);	
+			bBox->box.x = chunk_x * CHUNK_TOTAL_SIZE + block_x * BLOCK_SIZE;
+			bBox->box.y = chunk_y * CHUNK_TOTAL_SIZE + block_y * BLOCK_SIZE;
+			bBox->box.z = chunk_z * CHUNK_TOTAL_SIZE + block_z * BLOCK_SIZE;
+			bBox->box.w = BLOCK_SIZE;
+			bBox->box.h = BLOCK_SIZE;
+			bBox->box.d = BLOCK_SIZE;
+		}
+	}
 
+	void World::updatePlayerPhysics()
+	{
+		//Move player
+			movePlayer();
+		//Update player
+			player->update();		
+
+		if(player->status == ON_AIR)
+		{
+			//Gravity
+				player->moveVelocity(worldGravity, DOWN_VECTOR, 0.00035f);
 			
-			rayChunk = chunkHandler->getChunkP(ray_chunk_x, ray_chunk_y, ray_chunk_z);
-			if(rayChunk == NULL) break;
-			rayBlock = rayChunk->getBlockP(ray_block_x, ray_block_y, ray_block_z);
+			Block *bp = getBlockUnderPlayer(NULL);
 			
-			if((rayBlock != NULL) && playerB != rayBlock)
+			if(bp != NULL)
 			{
-				if(chunkHandler->isSolid(ray_chunk_x, ray_chunk_y, ray_chunk_z,
-								         ray_block_x, ray_block_y, ray_block_z))
+				if(not (bp->transparent))
 				{
-					
-					if(worldButtonsDown & WPAD_BUTTON_B || sickSaxis.gamepad.buttons.R1)
-					{
-						chunkHandler->setTransparent(ray_chunk_x, ray_chunk_y, ray_chunk_z,
-													 ray_block_x, ray_block_y, ray_block_z);
-					}					
-					if(worldButtonsDown & WPAD_BUTTON_A || sickSaxis.gamepad.buttons.L1)
-					{
-						chunkHandler->setNonTransparent(ray_chunk_x, ray_chunk_y, ray_chunk_z,
-													 ray_block_x, ray_block_y + 1, ray_block_z);
-					}						
-					
-					DrawCubeWire(ray_chunk_x, ray_chunk_y, ray_chunk_z,
-								         ray_block_x, ray_block_y, ray_block_z);
-					printf("X: %i   Y: %i   Z: %i\n", ray_block_x, ray_block_y, ray_block_z);
-					break;			
+					player->status = ON_GROUND;
+					player->velocity.y = 0.0f;	
+				}	
+			}
+		}
+		if(player->status == ON_GROUND)
+		{
+			Block *bp = getBlockUnderPlayer(NULL);
+			if(bp != NULL)
+			{
+				if(not bp->chunkPointer->isSolid(bp))
+				{
+					player->status = ON_AIR;
 				}
 			}
+			
 		}
 		
 	}
 
-
-	Chunk* World::playerChunk()
-	{			
-		return chunkHandler->getChunkP(player->chunk_x, player->chunk_y, player->chunk_z);
+	void World::update()
+	{
+		//Update controls
+			updateControls();
+		//Update chunks
+			chunkHandler->updateChunks();
+		//Update player
+			updatePlayerPhysics();
+		//Update view matrix
+			player->camera->updateViewMatrix();
 	}
-
-	Block* World::playerBlock()
-	{		
-		return chunkHandler->getChunkP(player->chunk_x, player->chunk_y, player->chunk_z)->  \
-							 getBlockP(player->block_x, player->block_y, player->block_z);
-	}
-					
-		
-		
-		

@@ -1,256 +1,140 @@
-#include "ChunkHandler.h"
+#include "ChunkHandler.hpp"
 
 
 //Constructor
-	ChunkHandler::ChunkHandler(float init_x, float init_y, float init_z)
+	ChunkHandler::ChunkHandler(Vertex32 *pos)
 	{
-		position.x = init_x;
-		position.y = init_y;
-		position.z = init_z;
-
+		position = pos;
+		int chunk_x, chunk_y, chunk_z;
 		
-		for(uint32_t chunk_z = 0; chunk_z < WORLD_SIZE; chunk_z++)
+		for(int z = 0;  z < WORLD_SIZE; z++)
 		{
-			for(uint32_t chunk_y = 0; chunk_y < WORLD_SIZE; chunk_y++)
-			{
-				for(uint32_t chunk_x = 0; chunk_x < WORLD_SIZE; chunk_x++)
+			for(int y = 0;  y < WORLD_SIZE; y++)
+			{		
+				for(int x = 0;  x < WORLD_SIZE; x++)
 				{
-					if(chunk_y < 1)
-					{
-						chunkList[toIndex(chunk_x, chunk_y, chunk_z)] = new Chunk(chunk_x * CHUNK_SIZE * BLOCK_SIZE,
-																 chunk_y * CHUNK_SIZE * BLOCK_SIZE,
-																 chunk_z * CHUNK_SIZE * BLOCK_SIZE);
-					}
+					chunk_x = position->x + x * CHUNK_SIZE * BLOCK_SIZE;
+					chunk_y = position->y + y * CHUNK_SIZE * BLOCK_SIZE;
+					chunk_z = position->z + z * CHUNK_SIZE * BLOCK_SIZE;
+					
+					if(y < 2)
+						chunkList.push_back(new Chunk(chunk_x, chunk_y, chunk_z, x, y, z, false));
 					else
-					{
-						chunkList[toIndex(chunk_x, chunk_y, chunk_z)] = new Chunk(chunk_x * CHUNK_SIZE * BLOCK_SIZE,
-																 chunk_y * CHUNK_SIZE * BLOCK_SIZE,
-																 chunk_z * CHUNK_SIZE * BLOCK_SIZE, true);						
-					}
-				}	
-			}	
-		}			
+						chunkList.push_back(new Chunk(chunk_x, chunk_y, chunk_z, x, y, z, true));
+				}
+			}
+		}
 		
-		generateAllMeshes();
-		
+		generateNeighbours();
+		updateChunks();
 	}
 	
 //Destructor
 	ChunkHandler::~ChunkHandler()
 	{
-		for(uint32_t i = 0; i < WORLD_VOLUME; i++)
-		{
-			chunkList[i]->~Chunk();
-			delete chunkList[i];
-		}
+		clearChunkList();
 	}
-					
 	
+
 //Methods
-	void ChunkHandler::update()
-	{
 
-	}
-	
-	Chunk *ChunkHandler::getChunkP(int chunk_x, int chunk_y, int chunk_z)
+	Block *ChunkHandler::getBlockAtPosition(int x, int y, int z)
 	{
-		if(chunk_x < 0 || chunk_y < 0 || chunk_z < 0) return NULL;
-		if(chunk_x > WORLD_SIZE_1 || chunk_y > WORLD_SIZE_1 || chunk_z > WORLD_SIZE_1) return NULL;
-		return chunkList[toIndex(chunk_x, chunk_y, chunk_z)];
-	}
-	
-	Block *ChunkHandler::getChunkBlockP(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z)
-	{
-		if(block_x < 0){block_x = (CHUNK_SIZE) + block_x; chunk_x--;}
-		if(block_y < 0){block_y = (CHUNK_SIZE) + block_y; chunk_y--;}
-		if(block_z < 0){block_z = (CHUNK_SIZE) + block_z; chunk_z--;}
-		
-		if(block_x > CHUNK_SIZE_1){block_x = block_x - CHUNK_SIZE; chunk_x++;}
-		if(block_y > CHUNK_SIZE_1){block_y = block_y - CHUNK_SIZE; chunk_y++;}
-		if(block_z > CHUNK_SIZE_1){block_z = block_z - CHUNK_SIZE; chunk_z++;}
-		
-		Chunk *cp;
-		if((cp = getChunkP(chunk_x, chunk_y, chunk_z)) == NULL) return NULL;
-		
-		return cp->getBlockP(block_x, block_y, block_z);
-	}
-
-	
-	bool ChunkHandler::isSolid(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z)
-	{
-
-		Block *bp = getChunkBlockP(chunk_x, chunk_y, chunk_z, block_x, block_y, block_z);
-		if(bp == NULL) return false;
-		
-		if(bp->ID == 0 || bp->transparent)  //AIR
-		{
-			return false;
-		}
-		
-		return true;
-	}
-	
-	void ChunkHandler::generateAllMeshes()
-	{
-		for(uint32_t chunk_z = 0; chunk_z < WORLD_SIZE; chunk_z++)
-		{
-			for(uint32_t chunk_y = 0; chunk_y < WORLD_SIZE; chunk_y++)
-			{
-				for(uint32_t chunk_x = 0; chunk_x < WORLD_SIZE; chunk_x++)
-				{
-					generateMesh(chunk_x, chunk_y, chunk_z);
-				}	
-			}	
-		}
-	}
-	
-	void ChunkHandler::generateMesh(int chunk_x, int chunk_y, int chunk_z)
-	{
-		
-		Chunk *cp = getChunkP(chunk_x, chunk_y, chunk_z);
-		if(cp == NULL) return;
-		Block *bp;
-		
-		cp->mesh.clear();
+		int chunk_x = floor(x / CHUNK_TOTAL_SIZE);
+		int chunk_y = floor(y / CHUNK_TOTAL_SIZE);
+		int chunk_z = floor(z / CHUNK_TOTAL_SIZE);
 				
-		for(uint32_t block_z = 0; block_z < CHUNK_SIZE; block_z++)
+		int block_x = floor((x - (chunk_x * CHUNK_TOTAL_SIZE)) / BLOCK_SIZE);
+		int block_y = floor((y - (chunk_y * CHUNK_TOTAL_SIZE)) / BLOCK_SIZE);
+		int block_z = floor((z - (chunk_z * CHUNK_TOTAL_SIZE)) / BLOCK_SIZE);
+			
+		return chunkList[getWorldIndex(chunk_x, chunk_y, chunk_z)]->blockList[block_z][block_y][block_x];
+	}
+
+	void ChunkHandler::clearChunkList()
+	{
+		for(uint32_t i = 0; i < chunkList.size(); i++)
 		{
-			for(uint32_t block_y = 0; block_y < CHUNK_SIZE; block_y++)
-			{
-				for(uint32_t block_x = 0; block_x < CHUNK_SIZE; block_x++)
+			delete chunkList[i];	
+		}
+		chunkList.clear();		
+	}
+	
+	void ChunkHandler::updateChunks()
+	{
+		std::vector<Chunk *>::iterator it;
+		for(it = chunkList.begin(); it != chunkList.end(); it++)
+		{
+			if((*it)->needsUpdate)
+				(*it)->generateMesh();
+		}	
+	}
+	
+	void ChunkHandler::generateNeighbours()
+	{
+		Chunk *chunkP;
+		for(int z = 0;  z < WORLD_SIZE; z++)
+		{
+			for(int y = 0;  y < WORLD_SIZE; y++)
+			{		
+				for(int x = 0;  x < WORLD_SIZE; x++)
 				{
-
-					bp = cp->getBlockP(block_x,block_y,block_z);
-					if(bp == NULL || bp->transparent == true) continue;		
-								
-					/* Check if the block is on the chunk limits or if the block is inside the chunk (not on the limits) */
+					chunkP = chunkList[getWorldIndex(x, y, z)];
 					
-						/* Left limit */
-								if(!isSolid(chunk_x, chunk_y, chunk_z, block_x - 1, block_y, block_z))
-									cp->addLeftIndex(block_x,block_y,block_z, (Color4u8){255, 255, 0, 255});								
-
-						/* Right limit */
-							if(!isSolid(chunk_x, chunk_y, chunk_z, block_x + 1, block_y, block_z))
-									cp->addRightIndex(block_x,block_y,block_z, (Color4u8){255, 0, 0, 255});	
-												
-						/* Top limit */
-							if(!isSolid(chunk_x, chunk_y, chunk_z, block_x, block_y + 1, block_z))
-								cp->addTopIndex(block_x,block_y,block_z, (Color4u8){255, 126, 0, 255});						
-		
-						/* Bottom limit */
-							if(!isSolid(chunk_x, chunk_y, chunk_z, block_x, block_y - 1, block_z))
-								cp->addBottomIndex(block_x,block_y,block_z, (Color4u8){0, 255, 0, 255});
-
-						/* Front limit */
-							if(!isSolid(chunk_x, chunk_y, chunk_z, block_x, block_y, block_z + 1))
-									cp->addFrontIndex(block_x,block_y,block_z,(Color4u8){0, 0, 255, 255});
-
-					
-						/* Back limit */
-							if(!isSolid(chunk_x, chunk_y, chunk_z, block_x, block_y, block_z - 1))
-								cp->addBackIndex(block_x,block_y,block_z, (Color4u8) {255, 0, 255, 255});							
-							
-					//Check Top
-						/*bp = cp->getBlockP(block_x, block_y + 1, block_z);
-						if(bp == NULL || bp->transparent || bp->ID == 0)
-						{
-							cp->addTopIndex(block_x,block_y,block_z, (Color4u8){255, 126, 0, 255});							
-						}
-
-					
-					 //Check Bottom
-						bp = cp->getBlockP(block_x, block_y - 1, block_z);
-						if(bp == NULL || bp->transparent || bp->ID == 0)
-						{
-							cp->addBottomIndex(block_x,block_y,block_z, (Color4u8){0, 255, 0, 255});							
-						}
-						
-					//Check Front
-						bp = cp->getBlockP(block_x, block_y, block_z + 1);
-						if(bp == NULL || bp->transparent || bp->ID == 0)
-						{
-							cp->addFrontIndex(block_x,block_y,block_z,(Color4u8){0, 0, 255, 255});						
-						}
-						
-					//Check Back
-						bp = cp->getBlockP(block_x, block_y, block_z - 1);
-						if(bp == NULL || bp->transparent || bp->ID == 0)
-						{
-							cp->addBackIndex(block_x,block_y,block_z, (Color4u8) {255, 0, 255, 255});					
-						}
-						
-					//Check Right
-						bp = cp->getBlockP(block_x + 1, block_y, block_z);
-						if(bp == NULL || bp->transparent || bp->ID == 0)
-						{
-							cp->addRightIndex(block_x,block_y,block_z, (Color4u8){255, 0, 0, 255});					
-						}
-						
-					//Check Left
-						bp = cp->getBlockP(block_x - 1, block_y, block_z);
-						if(bp == NULL || bp->transparent || bp->ID == 0)
-						{
-							cp->addLeftIndex(block_x,block_y,block_z, (Color4u8){255, 255, 0, 255});			
-						}*/							
-					
-					
+					//Left
+						if(x == 0)
+							chunkP->setLeftNeighbour(NULL);
+						else
+							chunkP->setLeftNeighbour(chunkList[getWorldIndex(x - 1, y, z)]);
+					//Right
+						if(x == (WORLD_SIZE-1))
+							chunkP->setRightNeighbour(NULL);
+						else
+							chunkP->setRightNeighbour(chunkList[getWorldIndex(x + 1, y, z)]);					
+					//Up
+						if(y == (WORLD_SIZE-1))
+							chunkP->setUpNeighbour(NULL);
+						else
+							chunkP->setUpNeighbour(chunkList[getWorldIndex(x, y + 1, z)]);
+					//Down
+						if(y == 0)
+							chunkP->setDownNeighbour(NULL);
+						else
+							chunkP->setDownNeighbour(chunkList[getWorldIndex(x, y - 1, z)]);
+					//Front
+						if(z == (WORLD_SIZE-1))
+							chunkP->setFrontNeighbour(NULL);
+						else
+							chunkP->setFrontNeighbour(chunkList[getWorldIndex(x, y, z + 1)]);
+					//Back
+						if(z == 0)
+							chunkP->setBackNeighbour(NULL);
+						else
+							chunkP->setBackNeighbour(chunkList[getWorldIndex(x, y, z - 1)]);					
 				}
 			}
 		}		
 	}
 	
-//Blocks
-	void ChunkHandler::setTransparent(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z)
+	bool ChunkHandler::chunkInBounds(Chunk *chunkPointer)
 	{
-		Block *bp = getChunkBlockP(chunk_x, chunk_y, chunk_z, block_x, block_y, block_z);
-		if(bp == NULL) return;
-		bp->transparent = true;
-		
-		if(block_x == 0)
-			generateMesh(chunk_x - 1, chunk_y, chunk_z);
-		if(block_x > CHUNK_SIZE_1)
-			generateMesh(chunk_x + 1, chunk_y, chunk_z);
-		if(block_y == 0)
-			generateMesh(chunk_x, chunk_y - 1, chunk_z);
-		if(block_y > CHUNK_SIZE_1)
-			generateMesh(chunk_x, chunk_y + 1, chunk_z);
-		if(block_z == 0)
-			generateMesh(chunk_x - 1, chunk_y, chunk_z - 1);
-		if(block_z > CHUNK_SIZE_1)
-			generateMesh(chunk_x + 1, chunk_y, chunk_z + 1);
-								
-		generateMesh(chunk_x, chunk_y, chunk_z);
-		
-	}
+		if(chunkPointer != NULL)
+		{
+			if(chunkPointer->index.x >= 0 && chunkPointer->index.x < WORLD_SIZE &&
+			   chunkPointer->index.y >= 0 && chunkPointer->index.y < WORLD_SIZE &&
+			   chunkPointer->index.z >= 0 && chunkPointer->index.z < WORLD_SIZE)
+			   {
+					return true;
+			   }
+		}
+		return false;
+	}	
 	
-	void ChunkHandler::setNonTransparent(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z)
-	{
-		Block *bp = getChunkBlockP(chunk_x, chunk_y, chunk_z, block_x, block_y, block_z);
-		if(bp == NULL) return;
-		bp->transparent = false;
-		
-		if(block_x == 0)
-			generateMesh(chunk_x - 1, chunk_y, chunk_z);
-		if(block_x > CHUNK_SIZE_1)
-			generateMesh(chunk_x + 1, chunk_y, chunk_z);
-		if(block_y == 0)
-			generateMesh(chunk_x, chunk_y - 1, chunk_z);
-		if(block_y > CHUNK_SIZE_1)
-			generateMesh(chunk_x, chunk_y + 1, chunk_z);
-		if(block_z == 0)
-			generateMesh(chunk_x - 1, chunk_y, chunk_z - 1);
-		if(block_z > CHUNK_SIZE_1)
-			generateMesh(chunk_x + 1, chunk_y, chunk_z + 1);
-								
-		generateMesh(chunk_x, chunk_y, chunk_z);	
-	}
-
 	void ChunkHandler::draw()
 	{
-		for(uint32_t i = 0; i < WORLD_VOLUME; i++)
+		std::vector<Chunk *>::iterator it;
+		for(it = chunkList.begin(); it != chunkList.end(); it++)
 		{
-			chunkList[i]->draw();
-		}
-
+			(*it)->draw();
+		}		
 	}
-

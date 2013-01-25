@@ -9,16 +9,16 @@
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 #include <ogc/lwp_watchdog.h>
-#include "Wiicraft.h"
 
 
 #define getTime() (ticks_to_millisecs(gettime()))
-#define DEFAULT_FIFO_SIZE	(256*1024 * 16)
+#define DEFAULT_FIFO_SIZE	(256*1024)
 
 
 //STUFF
 	void InitPad();
 	void UpdatePad();
+	void EndVideo();
 	void InitVideo();
 	void Clean();
 	void SwapBuffer();
@@ -29,7 +29,7 @@
 	void DrawRight(float x, float y, float z);
 	
 	void DrawCube(float x, float y, float z);
-	void DrawCubeWire(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z);
+	void DrawCubeTex(float x, float y, float z);
 //FPS
     void initFPS();
     void FPS(float *fps_var);

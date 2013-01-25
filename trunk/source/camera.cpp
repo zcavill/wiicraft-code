@@ -1,6 +1,7 @@
-#include "Camera.h"
+#include "Camera.hpp"
 
 guVector UP_VECTOR = {0.0f, 1.0f, 0.0f};
+guVector DOWN_VECTOR = {0.0f, -1.0f, 0.0f};
 
 //Constructor
 	Camera::Camera(MtxP viewP, guVector *positionP, float *pitchP, float *yawP)
@@ -50,7 +51,7 @@ guVector UP_VECTOR = {0.0f, 1.0f, 0.0f};
 		return v;
 	}
 
-	/*void Camera::move(float distance, guVector direction)
+/*	void Camera::move(float distance, guVector direction)
 	{
 		position->x += direction.x * distance;
 		position->y += direction.y * distance;
@@ -63,4 +64,5 @@ guVector UP_VECTOR = {0.0f, 1.0f, 0.0f};
 		position->y = y;
 		position->z = z;
 	}
-	*/
+
+*/
