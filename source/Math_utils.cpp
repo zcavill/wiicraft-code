@@ -247,10 +247,11 @@
 
 	bool block_collision(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z, float pos_x, float pos_y, float pos_z)
 	{
-		float block_pos_x = chunk_x * CHUNK_TOTAL_SIZE + block_x * BLOCK_SIZE;
+		/*float block_pos_x = chunk_x * CHUNK_TOTAL_SIZE + block_x * BLOCK_SIZE;
 		float block_pos_y = chunk_y * CHUNK_TOTAL_SIZE + block_y * BLOCK_SIZE; 
 		float block_pos_z = chunk_z * CHUNK_TOTAL_SIZE + block_z * BLOCK_SIZE; 
-		return box_collision(block_pos_x, block_pos_y, block_pos_z, BLOCK_SIZE, pos_x, pos_y, pos_z);
+		return box_collision(block_pos_x, block_pos_y, block_pos_z, BLOCK_SIZE, pos_x, pos_y, pos_z);*/
+		return true;
 	}
 	
 	

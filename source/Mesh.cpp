@@ -1,46 +1,26 @@
-#include "Mesh.h"
+#include "Mesh.hpp"
 
-
-//Construcor
-	Mesh::Mesh()
+//Constructor
+	Mesh::Mesh(uint8_t prm, uint8_t vtxFmt)
 	{
-		//Nozing...
+		setPrimitive(prm);
+		setVertexFormat(vtxFmt);
 	}
 	
 //Destructor
 	Mesh::~Mesh()
 	{
-		clear();
+		clearMeshData();
 	}
-	
 //Methods
-	void Mesh::addMeshData(MeshData newMesh)
+	void Mesh::draw()
 	{
-		meshDataList.push_back(newMesh);
-	}
-	
-	void Mesh::clear()
-	{
-		meshDataList.clear();
-	}
-	
-	int Mesh::listSize()
-	{	
-		return meshDataList.size();
-	}
-	
-	void Mesh::render()
-	{
-		std::vector <MeshData>::iterator meshIt;
-		GX_Begin(GX_QUADS, GX_VTXFMT0, listSize());
-
-		for(meshIt = meshDataList.begin(); meshIt != meshDataList.end(); meshIt++)
+		std::vector<TexVertex>::iterator it;		
+		GX_Begin(GX_QUADS, GX_VTXFMT0,  meshData.size());
+		for(it = meshData.begin(); it != meshData.end(); it++)
 		{
-			GX_Position3f32(meshIt->x, meshIt->y, meshIt->z);
-			GX_Color4u8(meshIt->color.r, meshIt->color.g, meshIt->color.b, meshIt->color.a);		
+			GX_Position3f32(it->x, it->y, it->z);
+			GX_TexCoord2f32(it->u, it->v);		
 		}
 		GX_End();
 	}
-
-
-

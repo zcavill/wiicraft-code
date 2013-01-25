@@ -1,158 +1,235 @@
-#include "Chunk.h"
-
+#include "Chunk.hpp"
 
 //Constructor
-	Chunk::Chunk(int initx, int inity, int initz, bool trans)
+	Chunk::Chunk(int pos_x, int pos_y, int pos_z, int index_x, int index_y, int index_z, bool transp)
 	{
-		position.x = initx;
-		position.y = inity;
-		position.z = initz;
-		
-		for(int z = 0; z < CHUNK_SIZE; z++)
-		{
-			for(int y = 0; y < CHUNK_SIZE; y++)
-			{
-				for(int x = 0; x < CHUNK_SIZE; x++)
-				{
-					blockList[z][y][x] = new Block();
-					blockList[z][y][x]->transparent = trans;
-				}
-			}
-		}
-		//
-		
-		for(int z = 0; z < CHUNK_SIZE; z++)
-		{
-			for(int y = 0; y < CHUNK_SIZE; y++)
-			{
-				for(int x = 0; x < CHUNK_SIZE; x++)
-				{
-					
-				//	if(z == 2) blockList[z][y][x]->transparent = true;
-				}
-			}
-		}
-		
-		//
-		
-
+		position.x = pos_x; position.y = pos_y; position.z = pos_z;
+		index.x = index_x; index.y = index_y; index.z = index_z;
+		initBlocks(transp);
+		mesh = new Mesh(GX_QUADS, GX_VTXFMT0);
+		needsUpdate = true;
 	}
-	
-	
+
+
 //Destructor
 	Chunk::~Chunk()
 	{
-		for(int z = 0; z < CHUNK_SIZE; z++)
-		{
-			for(int y = 0; y < CHUNK_SIZE; y++)
-			{
-				for(int x = 0; x < CHUNK_SIZE; x++)
-				{
-					delete blockList[z][y][x];
-				}
-				delete[] blockList[z][y];
-			}
-			delete[] blockList[z];
-		}
-		delete[] blockList;
-		mesh.~Mesh();
-	}
-	
-//Methods
-	Block* Chunk::getBlockP(uint32_t x, uint32_t y, uint32_t z)
-	{
-		if(x < 0 || y < 0 || z < 0) return NULL;
-		if(x >= CHUNK_SIZE ||y >= CHUNK_SIZE || z >= CHUNK_SIZE) return NULL;
-		return blockList[z][y][x];
+		deleteBlocks();
+		delete mesh;
 	}
 
+//Methods
+	void Chunk::initBlocks(bool transp)
+	{
+		for(int z = 0;  z < CHUNK_SIZE; z++)
+		{
+			for(int y = 0;  y < CHUNK_SIZE; y++)
+			{
+				for(int x = 0;  x < CHUNK_SIZE; x++)
+				{
+					blockList[z][y][x] = new Block(this,
+												   position.x + x * BLOCK_SIZE,
+												   position.y + y * BLOCK_SIZE,
+												   position.z + z * BLOCK_SIZE
+												   );
+					blockList[z][y][x]->transparent = transp;  //<<<<<<<<<<<<<<<<<<<<!!!!!!!!!!!!!!
+				}	
+			}			
+		}
+		//blockList[2][2][2]->transparent = true;
+	}
+	
+	void Chunk::deleteBlocks()
+	{
+		for(int z = 0;  z < CHUNK_SIZE; z++)
+		{
+			for(int y = 0;  y < CHUNK_SIZE; y++)
+			{
+				for(int x = 0;  x < CHUNK_SIZE; x++)
+				{
+					delete blockList[z][y][x];		
+				}		
+			}	
+		}
+	}
+	
+	bool Chunk::isSolid(Block *bp)
+	{
+		if(bp == NULL) return false;
+		if(bp->transparent || bp->ID == 0) //ID 0 = AIR
+		{
+			return false;		
+		}
+		return true;
+	}
+		
+	bool Chunk::isTransparent(Block *bp)
+	{
+		if(bp == NULL) return false;
+		if(bp->transparent || bp->ID == 0) //ID 0 = AIR
+		{
+			return true;		
+		}
+		return false;
+	}
+	
+	void Chunk::generateMesh()
+	{
+		//Clear current mesh data
+			mesh->clearMeshData();
+		Block *bp;
+		bool addLeft, addRight, addUp, addDown, addFront, addBack;
+		for(int z = 0;  z < CHUNK_SIZE; z++)
+		{
+			for(int y = 0;  y < CHUNK_SIZE; y++)
+			{		
+				for(int x = 0;  x < CHUNK_SIZE; x++)
+				{
+					bp = blockList[z][y][x];
+					if(bp->transparent) continue;
+					
+					//Check Left
+						if(x == 0)
+						{
+							if(leftNeighbour != NULL)
+								addLeft = leftNeighbour->isTransparent((CHUNK_SIZE-1), y, z);
+							else
+								addLeft = false;
+						}
+						else
+						{
+							addLeft = isTransparent(x - 1, y, z);
+						}
+						
+					//Check Right
+						if(x == (CHUNK_SIZE-1))
+						{
+							if(rightNeighbour != NULL)
+								addRight = rightNeighbour->isTransparent(0, y, z);
+							else
+								addRight = false;
+						}
+						else
+						{
+							addRight = isTransparent(x + 1, y, z);
+						}
+
+					//Check Down
+						if(y == 0)
+						{
+							if(downNeighbour != NULL)
+								addDown = downNeighbour->isTransparent(x, (CHUNK_SIZE-1), z);
+							else
+								addDown = false;
+						}
+						else
+						{
+							addDown = isTransparent(x, y - 1, z);
+						}
+						
+					//Check Up
+						if(y == (CHUNK_SIZE-1))
+						{
+							if(upNeighbour != NULL)
+								addUp = upNeighbour->isTransparent(x, 0, z);
+							else
+								addUp = false;
+						}
+						else
+						{
+							addUp = isTransparent(x, y + 1, z);
+						}
+						
+					//Check Back
+						if(z == 0)
+						{
+							if(backNeighbour != NULL)
+								addBack = backNeighbour->isTransparent(x, y, (CHUNK_SIZE-1));
+							else
+								addBack = false;								
+						}
+						else
+						{
+							addBack = isTransparent(x, y, z - 1);
+						}
+						
+					//Check Front
+						if(z == (CHUNK_SIZE-1))
+						{
+							if(frontNeighbour != NULL)
+								addFront = frontNeighbour->isTransparent(x, y, 0);
+							else
+								addFront = false;
+						}
+						else
+						{
+							addFront = isTransparent(x, y, z + 1);
+						}
+				//Add to the mesh
+					int block_x = position.x + x * BLOCK_SIZE;
+					int block_y = position.y + y * BLOCK_SIZE;
+					int block_z = position.z + z * BLOCK_SIZE;
+					
+					//Left
+						if(addLeft)
+						{
+							mesh->addData(block_x, block_y, block_z, 1.0f, 1.0f);
+							mesh->addData(block_x, block_y, block_z + BLOCK_SIZE, 0.0f, 1.0f);
+							mesh->addData(block_x, block_y + BLOCK_SIZE, block_z + BLOCK_SIZE, 0.0f, 0.0f);
+							mesh->addData(block_x, block_y + BLOCK_SIZE, block_z, 1.0f, 0.0f);
+						}
+					//Right
+						if(addRight)
+						{
+							mesh->addData(block_x + BLOCK_SIZE, block_y, block_z, 1.0f, 1.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y, block_z + BLOCK_SIZE, 0.0f, 1.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y + BLOCK_SIZE, block_z + BLOCK_SIZE, 0.0f, 0.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y + BLOCK_SIZE, block_z, 1.0f, 0.0f);	
+						}
+					
+					//UP
+						if(addUp)
+						{
+							mesh->addData(block_x, block_y + BLOCK_SIZE, block_z, 0.0f, 0.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y + BLOCK_SIZE, block_z, 1.0f, 0.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y + BLOCK_SIZE, block_z + BLOCK_SIZE, 1.0f, 1.0f);
+							mesh->addData(block_x, block_y + BLOCK_SIZE, block_z + BLOCK_SIZE, 0.0f, 1.0f);	
+						}
+					//Down	
+						if(addDown)
+						{
+							mesh->addData(block_x, block_y, block_z, 0.0f, 0.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y, block_z, 0.0f, 1.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y, block_z + BLOCK_SIZE, 1.0f, 1.0f);
+							mesh->addData(block_x, block_y, block_z + BLOCK_SIZE, 1.0f, 0.0f);	
+						}
+					//Front
+						if(addFront)
+						{
+							mesh->addData(block_x, block_y, block_z + BLOCK_SIZE, 0.0f, 1.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y, block_z + BLOCK_SIZE, 1.0f, 1.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y + BLOCK_SIZE, block_z + BLOCK_SIZE, 1.0f, 0.0f);
+							mesh->addData(block_x, block_y + BLOCK_SIZE, block_z + BLOCK_SIZE, 0.0f, 0.0f);
+						}
+					//Back
+						if(addBack)
+						{
+							mesh->addData(block_x, block_y, block_z, 0.0f, 1.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y, block_z, 1.0f, 1.0f);
+							mesh->addData(block_x + BLOCK_SIZE, block_y + BLOCK_SIZE, block_z, 1.0f, 0.0f);
+							mesh->addData(block_x, block_y + BLOCK_SIZE, block_z, 0.0f, 0.0f);
+						}	
+				}
+			}
+		}
+		
+		needsUpdate = false;
+	}
+	
 	void Chunk::draw()
 	{
-		mesh.render();
+		mesh->draw();
 	}
 	
-	//Cube faces
-		void Chunk::addTop(float x, float y, float z, Color4u8 color)
-		{
-			mesh.addMeshData((MeshData){x, y + BLOCK_SIZE, z, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y + BLOCK_SIZE, z, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE, color});
-			mesh.addMeshData((MeshData){x, y + BLOCK_SIZE, z + BLOCK_SIZE, color});
-		}
-		
 	
-		void Chunk::addBottom(float x, float y, float z, Color4u8 color)
-		{
-			mesh.addMeshData((MeshData){x, y, z, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y, z, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y, z + BLOCK_SIZE, color});
-			mesh.addMeshData((MeshData){x, y, z + BLOCK_SIZE, color});		
-		}
 
-
-		void Chunk::addRight(float x, float y, float z, Color4u8 color)
-		{
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y, z, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y, z + BLOCK_SIZE, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE, color});				
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y + BLOCK_SIZE, z, color});	
-		}
-		
-		void Chunk::addLeft(float x, float y, float z, Color4u8 color)
-		{
-			mesh.addMeshData((MeshData){x, y, z, color});
-			mesh.addMeshData((MeshData){x, y, z + BLOCK_SIZE, color});
-			mesh.addMeshData((MeshData){x, y + BLOCK_SIZE, z + BLOCK_SIZE, color});			
-			mesh.addMeshData((MeshData){x, y + BLOCK_SIZE, z, color});			
-		}
-
-		
-		void Chunk::addFront(float x, float y, float z, Color4u8 color)
-		{
-			mesh.addMeshData((MeshData){x, y, z + BLOCK_SIZE, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y, z + BLOCK_SIZE, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y + BLOCK_SIZE, z + BLOCK_SIZE, color});
-			mesh.addMeshData((MeshData){x, y + BLOCK_SIZE, z + BLOCK_SIZE, color});			
-		}
-		
-		void Chunk::addBack(float x, float y, float z, Color4u8 color)
-		{
-			mesh.addMeshData((MeshData){x, y, z, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y, z, color});
-			mesh.addMeshData((MeshData){x + BLOCK_SIZE, y + BLOCK_SIZE, z, color});
-			mesh.addMeshData((MeshData){x, y + BLOCK_SIZE, z, color});	
-		}
-		
-	//Cube faces index
-		void Chunk::addTopIndex(float x, float y, float z, Color4u8 color)
-		{
-			addTop(position.x + x * BLOCK_SIZE, position.y + y * BLOCK_SIZE, position.z + z * BLOCK_SIZE, color);
-		}
-		
-		void Chunk::addBottomIndex(float x, float y, float z, Color4u8 color)
-		{
-			addBottom(position.x + x * BLOCK_SIZE, position.y + y * BLOCK_SIZE, position.z + z * BLOCK_SIZE, color);
-		}
-
-		void Chunk::addRightIndex(float x, float y, float z, Color4u8 color)
-		{
-			addRight(position.x + x * BLOCK_SIZE, position.y + y * BLOCK_SIZE, position.z + z * BLOCK_SIZE, color);
-		}
-		
-		void Chunk::addLeftIndex(float x, float y, float z, Color4u8 color)
-		{
-			addLeft(position.x + x * BLOCK_SIZE, position.y + y * BLOCK_SIZE, position.z + z * BLOCK_SIZE, color);
-		}
-		
-		void Chunk::addFrontIndex(float x, float y, float z, Color4u8 color)
-		{
-			addFront(position.x + x * BLOCK_SIZE, position.y + y * BLOCK_SIZE, position.z + z * BLOCK_SIZE, color);
-		}
-		
-		void Chunk::addBackIndex(float x, float y, float z, Color4u8 color)
-		{
-			addBack(position.x + x * BLOCK_SIZE, position.y + y * BLOCK_SIZE, position.z + z * BLOCK_SIZE, color);
-		}
-		
-		
-		

@@ -5,7 +5,6 @@
 #include <gccore.h>
 #include <math.h>
 #include <string.h>
-#include "Wiicraft.h"
 
 #define PI 			3.14159265
 #define PI_2 		6.28318531
@@ -32,7 +31,6 @@ typedef struct
 {
 	uint8_t r,g,b,a;
 }Color4u8;
-
 
 //Converts spherical(phi, theta, rho) coordinates to cartesian coordinates (x,y,z)
 	guVector spherical_to_cartesian(float phi, float theta, float rho);
