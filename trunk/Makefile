@@ -3,11 +3,6 @@
 #---------------------------------------------------------------------------------
 .SUFFIXES:
 #---------------------------------------------------------------------------------
-# prevent deletion of implicit targets
-#---------------------------------------------------------------------------------
-.SECONDARY:
-#---------------------------------------------------------------------------------
-
 ifeq ($(strip $(DEVKITPPC)),)
 $(error "Please set DEVKITPPC in your environment. export DEVKITPPC=<path to>devkitPPC")
 endif
@@ -22,9 +17,8 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source #source/gfx
-DATA		:=	data #font textures blocks textures/armor textures/art textures/bg textures/enivronment textures/gui
-TEXTURES	:=	#textures blocks
+SOURCES		:=	source
+DATA		:=	data  
 INCLUDES	:=  include
 
 #---------------------------------------------------------------------------------
@@ -39,13 +33,12 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lfat -lGEMS_wifiWii -logc -lm -lfreetype -lfat -ljpeg -lpngu -lpng -lz -lasnd -lmad -fpermissive -lwiiuse -lbte -logc -lm -lsmpeg -lfat -lwiiuse -lbte -lwiikeyboard -logc #-lgrrlib
-
+LIBS	:= -lfat -lpngu -lpng -lwiiuse -lbte -logc -lm -lz -lGEMS_wifiWii -ljpeg -lasnd -lmad -fpermissive -lbte -logc -lm -lsmpeg -lfat -lwiiuse -lbte -lwiikeyboard -logc
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
 # include and lib
 #---------------------------------------------------------------------------------
-LIBDIRS	:= $(PORTLIBS)
+LIBDIRS	:= /opt/devkitpro/portlibs
 
 #---------------------------------------------------------------------------------
 # no real need to edit anything past this point unless you need to add additional
@@ -57,9 +50,7 @@ ifneq ($(BUILD),$(notdir $(CURDIR)))
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
 export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(DATA),$(CURDIR)/$(dir)) \
-					$(foreach dir,$(TEXTURES),$(CURDIR)/$(dir))
-					
+					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
 
@@ -71,8 +62,7 @@ CPPFILES	:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.cpp)))
 sFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.s)))
 SFILES		:=	$(foreach dir,$(SOURCES),$(notdir $(wildcard $(dir)/*.S)))
 BINFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.*)))
-SCFFILES	:=	$(foreach dir,$(TEXTURES),$(notdir $(wildcard $(dir)/*.scf)))
-TPLFILES	:=	$(SCFFILES:.scf=.tpl)
+PNGFILES	:=	$(foreach dir,$(DATA),$(notdir $(wildcard $(dir)/*.png)))
 
 #---------------------------------------------------------------------------------
 # use CXX for linking C++ projects, CC for standard C
@@ -84,7 +74,6 @@ else
 endif
 
 export OFILES	:=	$(addsuffix .o,$(BINFILES)) \
-					$(addsuffix .o,$(TPLFILES)) \
 					$(CPPFILES:.cpp=.o) $(CFILES:.c=.o) \
 					$(sFILES:.s=.o) $(SFILES:.S=.o)
 
@@ -121,6 +110,8 @@ run:
 #---------------------------------------------------------------------------------
 else
 
+DEPENDS	:=	$(OFILES:.o=.d)
+
 #---------------------------------------------------------------------------------
 # main targets
 #---------------------------------------------------------------------------------
@@ -128,88 +119,15 @@ $(OUTPUT).dol: $(OUTPUT).elf
 $(OUTPUT).elf: $(OFILES)
 
 #---------------------------------------------------------------------------------
-# This rule links in binary data with the .bin extension
-#---------------------------------------------------------------------------------
-%.bin.o	:	%.bin
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-#---------------------------------------------------------------------------------
-%.tpl.o	:	%.tpl
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
-
--include $(DEPSDIR)/*.d
-
-#---------------------------------------------------------------------------------
 # This rule links in binary data with the .jpg extension
 #---------------------------------------------------------------------------------
 %.jpg.o	:	%.jpg
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .png extension
-#---------------------------------------------------------------------------------
-%.png.o    :    %.png
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .ttf extension
-#---------------------------------------------------------------------------------
-%.ttf.o	:	%.ttf
+%.png.o :   %.png
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)
 
 -include $(DEPENDS)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .ogg extension
-#---------------------------------------------------------------------------------
-%.ogg.o	:	%.ogg
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
--include $(DEPENDS)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .ogg extension
-#---------------------------------------------------------------------------------
-%.db.o	:	%.db
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
--include $(DEPENDS)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .ogg extension
-#---------------------------------------------------------------------------------
-%.ini.o	:	%.ini
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	@$(bin2o)
-
--include $(DEPENDS)
-
-#---------------------------------------------------------------------------------
-# This rule links in binary data with the .mp3 extension
-#---------------------------------------------------------------------------------
-%.mp3.o	:	%.mp3
-#---------------------------------------------------------------------------------
-	@echo $(notdir $<)
-	$(bin2o)
-
--include $(DEPENDS)
-
 
 #---------------------------------------------------------------------------------
 endif
