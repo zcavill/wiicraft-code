@@ -4,6 +4,7 @@ echo Debugger by JoostinOnline (HacksDen.com)
 echo ________________________________________
 echo.
 echo.
+pause
 
 :: Gets the directory that powerpc-eabi-gdb.exe is installed to
 setlocal
@@ -40,4 +41,4 @@ echo.
 :eof
 echo.
 echo Press any key to exit...
-pause>NUL
+pause

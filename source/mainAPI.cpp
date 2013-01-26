@@ -37,7 +37,7 @@ API::~API(){
 
 void API::initAPI(int usingSD) {
 	
-	int folders = initFolders(usingSD);
+	//int folders = initFolders(usingSD);
 	
 	if(usingSD == 1){
 		ConfigFile cfg("sd:/APPS/WiiCraft/config.cfg");
