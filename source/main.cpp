@@ -1,3 +1,9 @@
+/*
+
+	(c)Mojang AB And WiiCraft theme
+
+									*/
+
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 #include <wiikeyboard/keyboard.h>
@@ -9,15 +15,24 @@
 #include <sdcard/wiisd_io.h>
 #include <png.h>
 #include <pngu.h>
-#include "Image.hpp"
+
+#include "grass_png.h"
+#include "stone_png.h"
+
+//Classes:
+#include "debug.h"
+#include "init.h"
+#include "mainAPI.h"
 #include "utils.h"
 #include "World.hpp"
 #include "Camera.hpp"
 #include "Player.hpp"
 #include "World.hpp"
+#include "Image.hpp"
 
-#include "grass_png.h"
-#include "stone_png.h"
+extern "C" {
+	extern void __exception_setreload(int t);
+}
 
 //Extern variables
 	extern Mtx44 projection;
@@ -29,18 +44,81 @@
 	extern WPADData *wmote_data;
 //
 
+//--------------------------------------------------
+	//Wiilight
+	//--------------------------------------------------
+	lwp_t light_thread = 0;
+	void *light_loop (void *arg);
+	vu32 *light_reg = (u32*) HW_GPIO;
+	bool light_on = false;
+	u8 light_level = 0;
+	struct timespec light_timeon = { 0 };
+	struct timespec light_timeoff = { 0 };
+
+	//----------------------------------------------------------
+	//Function's:
+	//----------------------------------------------------------
+
+	void WIILIGHT_TurnOn(){
+	*(u32*)0xCD0000C0 |= 0x20;
+}
+
+	void WIILIGHT_TurnOff(){
+	*(u32*)0xCD0000C0 &= ~0x20;
+}
+
+void WIILIGHT_SetLevel(int level){
+	light_level = MIN(MAX(level, 0), 100);
+	// Calculate the new on/off times for this light intensity
+	u32 level_on;
+	u32 level_off;
+	level_on = (light_level * 2.55) * 40000;
+	level_off = 10200000 - level_on;
+	light_timeon.tv_nsec = level_on;
+	light_timeoff.tv_nsec = level_off;
+}
+
 World world;
 void UpdateCamera();
 void MoveCamera();
 
 int main(int argc, char **argv)
 {	
+	// In the event of a code dump, the app will exit after 10 seconds (unless you press POWER)
+	__exception_setreload(10);
+	
 	fatInitDefault();
 	fatMountSimple("sd", &__io_wiisd);	
 	WPAD_Init();
 	InitVideo();
 	InitPad();
 	initFPS();
+	
+	int useSD;
+	
+	
+	//Disk light turn on and init
+	//WIILIGHT_Init();
+	WIILIGHT_SetLevel(255);
+	WIILIGHT_TurnOn();
+	
+	//if(*argv[1] == NULL){
+	//	useSD = 3;
+	//}
+	
+	//Check if it uses SD or USB:
+	char test;
+		sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
+		if(test == 115){ useSD = 1; } //first character = s
+		else if(test == 117){ useSD = 2; } //first character = u
+	
+	//Init's that's can't be made in c:
+	
+	//API:
+	API mainAPI;
+	mainAPI.initAPI(useSD);
+	
+	//END OF INIT'S
 	
 	Image grass((uint8_t *)grass_png);
 	Image stone((uint8_t *)stone_png);
