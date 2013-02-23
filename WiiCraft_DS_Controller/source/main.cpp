@@ -1,5 +1,4 @@
 /* Made By filfat */
-//Port: 8593
 #include <nds.h>
 #include <stdio.h>
 #include <dswifi9.h>
@@ -15,13 +14,53 @@
 bool Connected = false;
 bool debug = false;
 bool CMDbool = false;
+unsigned int PLAYERS = 4;
+unsigned int PORT = 8593;
 unsigned int clientForServer;
 const unsigned int VERSION = 1;
-char HELP[] = "/help or /?: shows this\n/version or ver: show the version of WiiCraft DS controller\n";
+char HELP[] = "/help or /?: Shows this\n"
+			  "/version or ver: Shows the version\n"
+			  "/server: Start the server mode\n"
+			  "/back: Goes back to connect to server\n"
+			  "/clear: Clears the screen\n"
+			  "/exit: Exit this app";
 
 void OnKeyPressed(int key) {
    if(key > 0)
       iprintf("%c", key);
+}
+
+void CMD(void){
+	char CMD[256];
+	//int NUMBINPUT;
+	consoleClear();
+	iprintf("Weclome to debug screen\n");
+		while(1){
+			scanf("%s", CMD);
+			if(!strcmp(CMD, "/server")){
+				debug = true;
+				break;
+			}
+			else if((!strcmp(CMD, "/version")) || (!strcmp(CMD, "/ver"))){
+				iprintf("Version: %d\n", VERSION);
+			}
+			else if((!strcmp(CMD, "/help")) || (!strcmp(CMD, "/?"))){
+				iprintf("%s", HELP);
+			}
+			else if(!strcmp(CMD, "/back")){
+				consoleClear();
+				break;
+			}
+			else if(!strcmp(CMD, "/clear")){
+				consoleClear();
+			}
+			else if(!strcmp(CMD, "/exit")){
+				exit(0);
+			}
+			else{
+				iprintf("Unknown Command\n");
+			}
+		}
 }
 
 int main(void)  {
@@ -74,13 +113,12 @@ int main(void)  {
 			char wiiIP[256];
 
 			iprintf("Your ip: %s\n",inet_ntoa(ip));
-			iprintf("Type in your Wii's IP:\n");/* or /cmd for the console*/ // does not work at the moment =)
-
+			iprintf("Type in your Wii's IP(or /cmd for the console):\n");
 			scanf("%s", wiiIP);
 
-			if((wiiIP[0] == 47) && (wiiIP[1] == 99) && (wiiIP[2] == 109) && (wiiIP[3] == 100)){
-				CMDbool = true;
-				break;
+			if(!strcmp(wiiIP, "/cmd")){
+				CMD();
+				continue;
 			}	
 
 			iprintf("\nConnecting To %s\nfrom %s...", wiiIP,inet_ntoa(ip));
@@ -109,35 +147,24 @@ int main(void)  {
 			consoleClear();
 	}
 	
-	if(CMDbool == true){
-		char CMD[256];
-		while(!CMD == "/stop"){
-			scanf("%s", CMD);
-			if(CMD == "/server"){
-				debug = true;
-				break;
-			}
-			else if((CMD == "/version") || (CMD == "/ver")){
-				iprintf("Version: %s\n", VERSION);
-			}
-			else if((CMD == "/help") || (CMD == "/?")){
-				iprintf("%s", HELP);
-			}
-		}
-		
-	}
-	
 	int host = 0;
+	int client = 0;
 	if(debug == true){
+		
+		consoleClear();
+		iprintf("Welcome To Server Screen\n");
 		iprintf("Your ip: %s\n",inet_ntoa(ip));
-		host = TCP_Server(8593, 4);//TCP_Server(port, number of players)
+		host = TCP_Server(PORT, PLAYERS);//TCP_Server(port, number of players)
 	}
 	
 	while(debug == true){
 		
-		int client = 0; client = TCP_GetClient(host);//TCP_GetClient(host socket)
-		iprintf("Client connected.\n");
-		clientForServer++;
+		client = PLAYERS; client = TCP_GetClient(host);//TCP_GetClient(host socket)
+		if(!clientForServer == 4){
+			clientForServer++;
+			iprintf("Client connected(%d of %d)\n", clientForServer,PLAYERS);
+			iprintf("Client id: %d\n", client);
+		}
 		
 	}
 

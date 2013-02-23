@@ -15,6 +15,7 @@
 #include <sdcard/wiisd_io.h>
 #include <png.h>
 #include <pngu.h>
+#include <GEMS_WifiWii.h>
 
 #include "grass_png.h"
 #include "stone_png.h"
@@ -43,6 +44,9 @@ extern "C" {
 	extern struct joystick_t *js;
 	extern WPADData *wmote_data;
 //
+
+const unsigned int PLAYERS = 4;
+const unsigned int PORT = 8593;
 
 //--------------------------------------------------
 	//Wiilight
