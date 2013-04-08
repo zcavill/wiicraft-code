@@ -15,7 +15,7 @@
 #include <sdcard/wiisd_io.h>
 #include <png.h>
 #include <pngu.h>
-#include <GEMS_WifiWii.h>
+//#include <GEMS_WifiWii.h>
 
 #include "grass_png.h"
 #include "stone_png.h"
@@ -53,7 +53,7 @@ const unsigned int PORT = 8593;
 	//--------------------------------------------------
 	lwp_t light_thread = 0;
 	void *light_loop (void *arg);
-	vu32 *light_reg = (u32*) HW_GPIO;
+	//vu32 *light_reg = (u32*) HW_GPIO;
 	bool light_on = false;
 	u8 light_level = 0;
 	struct timespec light_timeon = { 0 };
