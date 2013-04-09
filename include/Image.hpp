@@ -3,7 +3,7 @@
 
 #include <gccore.h>
 #include <png.h>
-#include <pngu.h>
+#include "../PNGU/pngu.h"
 #include <malloc.h>
 
 class Image
