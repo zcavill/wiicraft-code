@@ -1,0 +1,27 @@
+#labels Phase-Implementation
+= Introduction =
+
+First of all this page is in WIP! and the code havent bean released yet!
+
+Functions:
+<code language="C++">
+MAP();
+~MAP();
+void loadMap();
+void createMapArray();
+void generateMap();
+void closeMap();
+void updateMap();
+void saveMap();
+</code>
+= Details =
+
+  * <code language="C++">MAP();</code>
+
+this is the function that's runs when you create a MAP.
+  * <code language="C++">~MAP()</code>
+this is the function that's is the last that runs!
+  * <code language="C++">generateMap()</code>
+Type: <code language="C++">void</code>
+Parameter's: none
+Info: this is the function that's will generate the map. But remember for the moment it just make a flat grass map!
