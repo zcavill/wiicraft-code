@@ -1,4 +1,6 @@
 #include "Chunk.hpp"
+//#include "SingletonMap.h" DONT WORKS YET! SingletonMap::Instance()->mainMAP.mapArray[z][y][x]
+#include "map.h"
 
 //Constructor
 	Chunk::Chunk(int pos_x, int pos_y, int pos_z, int index_x, int index_y, int index_z, bool transp)
@@ -21,6 +23,7 @@
 //Methods
 	void Chunk::initBlocks(bool transp)
 	{
+		
 		for(int z = 0;  z < CHUNK_SIZE; z++)
 		{
 			for(int y = 0;  y < CHUNK_SIZE; y++)
@@ -30,8 +33,9 @@
 					blockList[z][y][x] = new Block(this,
 												   position.x + x * BLOCK_SIZE,
 												   position.y + y * BLOCK_SIZE,
-												   position.z + z * BLOCK_SIZE
-												   );
+												   position.z + z * BLOCK_SIZE, '1' //for now!
+												   //seeGeneratedMapBlock(z, y, x)		//mainMAP.mapArray[z][y][x] // WIP!
+											   );
 					blockList[z][y][x]->transparent = transp;  //<<<<<<<<<<<<<<<<<<<<!!!!!!!!!!!!!!
 				}	
 			}			

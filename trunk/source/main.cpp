@@ -30,10 +30,14 @@
 #include "Player.hpp"
 #include "World.hpp"
 #include "Image.hpp"
+#include "map.h"
+#include "SingletonMap.h"
 
 extern "C" {
 	extern void __exception_setreload(int t);
 }
+
+const static MAP mainMAP;
 
 //Extern variables
 	extern Mtx44 projection;
@@ -45,7 +49,8 @@ extern "C" {
 	extern WPADData *wmote_data;
 //
 
-const unsigned int PLAYERS = 4;
+const unsigned int LOCAL_PLAYERS = 4;
+const unsigned int ONLINE_PLAYERS = 8;
 const unsigned int PORT = 8593;
 
 //--------------------------------------------------
@@ -100,15 +105,17 @@ int main(int argc, char **argv)
 	
 	int useSD;
 	
+	//SingletonMap::Instance()->defineMapclass();
+	
 	
 	//Disk light turn on and init
 	//WIILIGHT_Init();
 	WIILIGHT_SetLevel(255);
 	WIILIGHT_TurnOn();
 	
-	//if(*argv[1] == NULL){
+	//if(*argv[1] == NULL)
 	//	useSD = 3;
-	//}
+	//
 	
 	//Check if it uses SD or USB:
 	char test;
@@ -121,6 +128,8 @@ int main(int argc, char **argv)
 	//API:
 	API mainAPI;
 	mainAPI.initAPI(useSD);
+	
+	
 	
 	//END OF INIT'S
 	

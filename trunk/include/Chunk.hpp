@@ -6,7 +6,9 @@
 #include "Math_utils.h"
 #include "Wiicraft.hpp"
 
+
 class Block;
+
 
 class Chunk
 {
@@ -47,6 +49,7 @@ public:
 		Chunk *downNeighbour;
 		Chunk *frontNeighbour;
 		Chunk *backNeighbour;
+
 	
 };
 
