@@ -46,8 +46,14 @@ class MAP {
 		string mapPath;
 		double mapArray[Zmap][Ymap][Xmap];
 };
-static int seeGeneratedMapBlock(int z, int y, int x){
-	return 0;
-}
+
+//extern MAP mainMAP;
+
+/*static int seeGeneratedMapBlock(int z, int y, int x){
+	if(mainMAP.mapArray[z][y][x] == true){
+		return mainMAP.mapArray[z][y][x];
+	} //else
+	return false;
+}*/
 
 #endif

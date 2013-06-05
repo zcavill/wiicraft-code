@@ -37,8 +37,6 @@ extern "C" {
 	extern void __exception_setreload(int t);
 }
 
-const static MAP mainMAP;
-
 //Extern variables
 	extern Mtx44 projection;
 	extern Mtx view, model, modelview;
@@ -102,6 +100,10 @@ int main(int argc, char **argv)
 	InitVideo();
 	InitPad();
 	initFPS();
+	
+	//MAP mainMAP;
+	//mainMAP.createMapArray();
+	
 	
 	int useSD;
 	
