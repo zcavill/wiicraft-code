@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <fat.h>
 #include <asndlib.h>
 #include <mp3player.h>
 #include <gccore.h>
@@ -11,7 +12,7 @@
 void Initialize(void){
 	//Debug:
 	#ifdef USBGECKO
-	GRRLIB_GeckoInit();
+	fatInitDefault();
 	DebugStart(true, "sd://wiicraft.log");
 	Debug("-------------------[Wiicraft Debug]----------------------");
 	Debug("Done With DebugStart\n");
