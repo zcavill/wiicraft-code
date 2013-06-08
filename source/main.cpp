@@ -30,8 +30,6 @@
 #include "World.hpp"
 #include "Image.hpp"
 #include "map.h"
-#include "SingletonMap.h"
-
 extern "C" {
 	extern void __exception_setreload(int t);
 }
