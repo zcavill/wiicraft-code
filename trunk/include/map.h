@@ -11,7 +11,7 @@
 #define Ymap 32
 #define Zmap 32
 #define groundLevel 0
-#define gorundID 1
+#define groundID 1
 
 #include <iostream>
 #include <fstream>
