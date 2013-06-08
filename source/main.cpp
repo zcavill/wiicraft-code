@@ -22,9 +22,8 @@
 
 //Classes:
 #include "debug.h"
-#include "init.h"
 #include "mainAPI.h"
-#include "utils.h"
+#include "init.h"
 #include "World.hpp"
 #include "Camera.hpp"
 #include "Player.hpp"
@@ -93,16 +92,10 @@ int main(int argc, char **argv)
 {	
 	// In the event of a code dump, the app will exit after 10 seconds (unless you press POWER)
 	__exception_setreload(10);
-	
-	fatInitDefault();
-	fatMountSimple("sd", &__io_wiisd);	
-	WPAD_Init();
-	InitVideo();
-	InitPad();
-	initFPS();
+	Initialize();
+	fatMountSimple("sd", &__io_wiisd);
 	
 	//MAP mainMAP;
-	//mainMAP.createMapArray();
 	
 	
 	int useSD;
