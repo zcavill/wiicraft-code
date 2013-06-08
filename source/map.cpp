@@ -72,7 +72,7 @@ void MAP::generateMap(){
 	// Makes a Flat Map
 	for(int tempX = 0; tempX <= Xmap; ++tempX){
 		for(int tempY = 0; tempY <= Xmap; ++tempY){
-			mapArray[groundLevel][tempY][tempX] = gorundID;
+			mapArray[groundLevel][tempY][tempX] = groundID;
 		}
 	}
 	

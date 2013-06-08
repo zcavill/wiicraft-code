@@ -42,6 +42,9 @@ void Initialize(void){
 
 void Deinitialize(void){
 	WPAD_Shutdown();
+	#ifdef USBGECKO
+	Debug("WPAD_Shutdown Passed");
+	#endif
 	
 	EndVideo();
 	#ifdef USBGECKO
