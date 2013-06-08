@@ -30,6 +30,8 @@
 #include "World.hpp"
 #include "Image.hpp"
 #include "map.h"
+#include "main.h"
+
 extern "C" {
 	extern void __exception_setreload(int t);
 }
@@ -96,7 +98,7 @@ int main(int argc, char **argv)
 	//MAP mainMAP;
 	
 	
-	int useSD = 3;
+	int fatDevice = FAT_DEVICE_NONE;
 	
 	//SingletonMap::Instance()->defineMapclass();
 	
@@ -107,20 +109,20 @@ int main(int argc, char **argv)
 	WIILIGHT_TurnOn();
 	
 	//if(*argv[1] == NULL)
-	//	useSD = 3;
+	//	fatDevice = FAT_DEVICE_NONE;
 	//
 	
 	//Check if it uses SD or USB:
 	char test;
 		sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
-		if(test == 115){ useSD = 1; } //first character = s
-		else if(test == 117){ useSD = 2; } //first character = u
+		if(test == 115){ fatDevice = FAT_DEVICE_SD; } //first character = s
+		else if(test == 117){ fatDevice = FAT_DEVICE_USB; } //first character = u
 	
 	//Init's that's can't be made in c:
 	
 	//API:
 	API mainAPI;
-	mainAPI.initAPI(useSD);
+	mainAPI.initAPI(fatDevice);
 	
 	
 	
