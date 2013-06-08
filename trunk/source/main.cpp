@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	//MAP mainMAP;
 	
 	
-	int useSD;
+	int useSD = 3;
 	
 	//SingletonMap::Instance()->defineMapclass();
 	
