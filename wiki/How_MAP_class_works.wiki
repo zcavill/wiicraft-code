@@ -17,11 +17,12 @@ void saveMap();
 = Details =
 
   * <code language="C++">MAP();</code>
-
 this is the function that's runs when you create a MAP.
+
   * <code language="C++">~MAP()</code>
 this is the function that's is the last that runs!
+= Detail's =
   * <code language="C++">generateMap()</code>
-Type: <code language="C++">void</code>
-Parameter's: none
-Info: this is the function that's will generate the map. But remember for the moment it just make a flat grass map!
+* Type: <code language="C++">void</code>
+* Parameter's: none.
+* Info: this is the function that's will generate the map. But remember for the moment it just make a flat grass map!
