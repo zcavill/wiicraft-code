@@ -50,6 +50,8 @@ const unsigned int LOCAL_PLAYERS = 4;
 const unsigned int ONLINE_PLAYERS = 8;
 const unsigned int PORT = 8593;
 
+int fatDevice = FAT_DEVICE_NONE;
+
 //--------------------------------------------------
 	//Wiilight
 	//--------------------------------------------------
@@ -98,8 +100,6 @@ int main(int argc, char **argv)
 	//MAP mainMAP;
 	
 	
-	int fatDevice = FAT_DEVICE_NONE;
-	
 	//SingletonMap::Instance()->defineMapclass();
 	
 	
@@ -122,7 +122,7 @@ int main(int argc, char **argv)
 	
 	//API:
 	API mainAPI;
-	mainAPI.initAPI(fatDevice);
+	mainAPI.initAPI();
 	
 	
 	
