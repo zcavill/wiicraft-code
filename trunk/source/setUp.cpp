@@ -12,15 +12,16 @@
 #include <sys/stat.h>
 #include "setUp.h"
 #include "utils.h"
+#include "main.h"
 
 using namespace std;
 
 int initFolders(int SD){
 
-	if(SD == '1')
+	if(SD == FAT_DEVICE_SD)
 		return mkdir("sd:/WiiCraft", S_IRWXU|S_IRGRP|S_IXGRP);
-	else if(SD == '2')
+	else if(SD == FAT_DEVICE_USB)
 		return mkdir("usb:/WiiCraft", S_IRWXU|S_IRGRP|S_IXGRP);
 	else
-		return 3;
+		return FAT_DEVICE_NONE;
 }

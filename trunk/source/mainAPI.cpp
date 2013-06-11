@@ -22,6 +22,7 @@
 #include "ConfigFile.h"
 #include "setUp.h"
 #include "utils.h"
+#include "main.h"
 
 
 using namespace std;
@@ -35,11 +36,11 @@ API::~API(){
 	//Todo
 }
 
-void API::initAPI(int usingSD) {
+void API::initAPI(void) {
 	
 	//int folders = initFolders(usingSD);
 	
-	if(usingSD == 1){
+	if(fatDevice == FAT_DEVICE_SD){
 		ConfigFile cfg("sd:/APPS/WiiCraft/config.cfg");
 		
 		existsAPI = cfg.keyExists("API");
@@ -47,7 +48,7 @@ void API::initAPI(int usingSD) {
 		LUAPATH = cfg.getValueOfKey<string>("LUAPATH");
 		existsTEXTURES = cfg.keyExists("TEXTURES");
 		
-	} else if(usingSD == 2) {
+	} else if(fatDevice == FAT_DEVICE_USB) {
 		ConfigFile cfg("usb:/APPS/WiiCraft/config.cfg");
 		
 		existsAPI = cfg.keyExists("API");
@@ -55,7 +56,7 @@ void API::initAPI(int usingSD) {
 		LUAPATH = cfg.getValueOfKey<string>("LUAPATH");
 		existsTEXTURES = cfg.keyExists("TEXTURES");
 		
-	} else if(usingSD == 3) {
+	} else {
 		//ConfigFile cfg("sd:/APPS/WiiCraft/config.cfg");
 		
 		existsAPI = true;			//cfg.keyExists("API");
@@ -67,7 +68,7 @@ void API::initAPI(int usingSD) {
 		//=================================
 		if(existsLUA){
 			string path;
-			if (usingSD == 1)
+			if (fatDevice == FAT_DEVICE_SD)
 				path = "sd:/";
 			else
 				path = "usb:/";

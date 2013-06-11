@@ -36,7 +36,7 @@ class API {
 	public:
 		API();
 		~API();
-		void initAPI(int usingsd);
+		void initAPI(void);
 		void stopAPI();
 		
 		//Public valuse:
