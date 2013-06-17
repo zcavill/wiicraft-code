@@ -1,6 +1,6 @@
 /*
 
-	WiiCraft theme
+	(C)WiiCraft theme
 
 									*/
 
