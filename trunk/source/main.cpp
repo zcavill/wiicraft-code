@@ -46,9 +46,9 @@ extern "C" {
 	extern WPADData *wmote_data;
 //
 
-const unsigned int LOCAL_PLAYERS = 4;
-const unsigned int ONLINE_PLAYERS = 8;
-const unsigned int PORT = 8593;
+const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
+const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
+const unsigned int PORT = 8593; //PORT
 
 int fatDevice = FAT_DEVICE_NONE;
 
@@ -124,26 +124,28 @@ int main(int argc, char **argv)
 	API mainAPI;
 	mainAPI.initAPI();
 	
-	
+	bool debugText = true;
 	
 	//END OF INIT'S
 	
 	Image grass((uint8_t *)grass_png);
 	Image stone((uint8_t *)stone_png);
 
-	while(1)
-	{
+  
+  //----------------------------------------<Main Game Loop>-----------------------------------------\\
+	while(1){
 		Clean();
 		UpdatePad();
-		printf("FPS: %f\n", fps);
-		printf("posx: %f   posy: %f  posz: %f\n", world.player->position.x, world.player->position.y, world.player->position.z);
-		printf("pitch: %f   yaw: %f\n", world.player->pitch, world.player->yaw);
-		printf("size: %i\n", world.chunkHandler->chunkList.size());
-		
-		printf("chunkX: %i  chunkY: %i  chunkZ: %i\n", world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
-		printf("blockX: %i  blockY: %i  blockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
-		printf("player status: %s  velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
-
+      
+      if(debugText == true){
+        printf("FPS: %f\n", fps);
+        printf("Posx: %f   posy: %f  posz: %f\n", world.player->position.x, world.player->position.y, world.player->position.z);
+        printf("Pitch: %f   yaw: %f\n", world.player->pitch, world.player->yaw);
+        printf("Size: %i\n", world.chunkHandler->chunkList.size());
+        printf("ChunkX: %i  chunkY: %i  chunkZ: %i\n", world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
+        printf("BlockX: %i  blockY: %i  blockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
+        printf("Player Status: %s  velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
+      }
 
 		grass.setGX(GX_TEXMAP0);
 		DrawCubeTex(0,0,-5);
@@ -158,11 +160,10 @@ int main(int argc, char **argv)
 		SwapBuffer();
 		FPS(&fps);
 		if (pressed & WPAD_BUTTON_HOME ) break;
+    if ((wiimoteData->btns_h & WPAD_BUTTON_UP) && (wiimoteData->btns_h & WPAD_BUTTON_A) && (wiimoteData->btns_h & WPAD_BUTTON_B)) debugText = !debugText;
 	}
-	WPAD_Shutdown();
-	EndVideo();
-	exit(0);
-	return 0;
+   Deinitialize();
+   exit(0);
 }
 
 void MoveCamera()
