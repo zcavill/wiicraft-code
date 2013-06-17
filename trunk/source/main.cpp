@@ -1,6 +1,6 @@
 /*
 
-	(c)Mojang AB And WiiCraft theme
+	WiiCraft theme
 
 									*/
 
