@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 		SwapBuffer();
 		FPS(&fps);
 		if (pressed & WPAD_BUTTON_HOME ) break;
-    if ((wiimoteData->btns_h & WPAD_BUTTON_UP) && (wiimoteData->btns_h & WPAD_BUTTON_A) && (wiimoteData->btns_h & WPAD_BUTTON_B)) debugText = !debugText;
+    if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
 	}
    Deinitialize();
    exit(0);
