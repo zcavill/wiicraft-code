@@ -8,6 +8,7 @@
 #include <math.h>
 #include <gccore.h>
 #include <wiiuse/wpad.h>
+#include <ogc/pad.h>
 #include <ogc/lwp_watchdog.h>
 
 
@@ -18,6 +19,7 @@
 //STUFF
 	void InitPad();
 	void UpdatePad();
+	u32 DetectInput(void);
 	void EndVideo();
 	void InitVideo();
 	void Clean();

@@ -12,7 +12,7 @@ Mtx44 projection;
 Mtx view, model, modelview;
 
 float fps = 0.0f;
-u32 pressed;
+u32 pressed; // GC, Wii Remote, Nuchuck, or Classic Controller input
 u32 expansion_type;
 struct joystick_t *js;
 WPADData *wmote_data;
@@ -21,6 +21,7 @@ WPADData *wmote_data;
 void InitPad()
 {
 	WPAD_Init();
+	PAD_Init();
 	WPAD_SetDataFormat(WPAD_CHAN_0, WPAD_FMT_BTNS_ACC_IR);
 	WPAD_SetVRes(WPAD_CHAN_ALL, rmode->fbWidth, rmode->xfbHeight);
 	WPAD_Probe(0, &expansion_type);	
@@ -33,6 +34,52 @@ void UpdatePad()
 	wmote_data = WPAD_Data(0);
 	js = &wmote_data->exp.nunchuk.js;
 	pressed = WPAD_ButtonsHeld(0);
+}
+
+u32 DetectInput(void) {
+	expansion_t e; // Classic Controller or Nunchuck
+	WPAD_ScanPads(); // Scan the Wii remotes
+	WPAD_Expansion(0, &e); // Grab data about expansion
+	u32 pressed = WPAD_ButtonsDown(0); //Store pressed buttons
+	
+	if (pressed && (e.type == WPAD_EXP_CLASSIC))
+	{
+		// Convert to wiimote values
+		if (pressed & CLASSIC_CTRL_BUTTON_ZR) return WPAD_BUTTON_PLUS;
+		if (pressed & CLASSIC_CTRL_BUTTON_ZL) return WPAD_BUTTON_MINUS;
+
+		if (pressed & CLASSIC_CTRL_BUTTON_PLUS) return WPAD_BUTTON_PLUS;
+		if (pressed & CLASSIC_CTRL_BUTTON_MINUS) return WPAD_BUTTON_MINUS;
+
+		if (pressed & CLASSIC_CTRL_BUTTON_A) return WPAD_BUTTON_A;
+		if (pressed & CLASSIC_CTRL_BUTTON_B) return WPAD_BUTTON_B;
+		if (pressed & CLASSIC_CTRL_BUTTON_X) return WPAD_BUTTON_1;
+		if (pressed & CLASSIC_CTRL_BUTTON_Y) return WPAD_BUTTON_2;
+		if (pressed & CLASSIC_CTRL_BUTTON_HOME) return WPAD_BUTTON_HOME;
+	}
+	
+	// Return Wii Remote or Nunchuck values
+	if (pressed)
+		return pressed;
+	
+	// No buttons on the Wii remote or its extensions were pressed
+	PAD_ScanPads();
+	pressed = PAD_ButtonsDown(PAD_CHAN0);
+
+	if (pressed) {
+		if (pressed & PAD_TRIGGER_R) return WPAD_BUTTON_PLUS;
+		if (pressed & PAD_TRIGGER_L) return WPAD_BUTTON_MINUS;
+		if (pressed & PAD_BUTTON_A) return WPAD_BUTTON_A;
+		if (pressed & PAD_BUTTON_B) return WPAD_BUTTON_B;
+		if (pressed & PAD_BUTTON_X) return WPAD_BUTTON_1;
+		if (pressed & PAD_BUTTON_Y) return WPAD_BUTTON_2;
+		if (pressed & PAD_BUTTON_MENU) return WPAD_BUTTON_HOME;
+		if (pressed & PAD_BUTTON_UP) return WPAD_BUTTON_UP;
+		if (pressed & PAD_BUTTON_LEFT) return WPAD_BUTTON_LEFT;
+		if (pressed & PAD_BUTTON_DOWN) return WPAD_BUTTON_DOWN;
+		if (pressed & PAD_BUTTON_RIGHT) return WPAD_BUTTON_RIGHT;
+	}
+	return 0;
 }
 
 void EndVideo()
