@@ -131,6 +131,9 @@ int main(int argc, char **argv)
 	Image grass((uint8_t *)grass_png);
 	Image stone((uint8_t *)stone_png);
 
+
+
+
   
   /*----------------------------------------<Main Game Loop>-----------------------------------------*/
 	while(1){
@@ -165,6 +168,11 @@ int main(int argc, char **argv)
    Deinitialize();
    exit(0);
 }
+/*----------------------------------------<End Of Main Game Loop>-----------------------------------------*/
+
+
+
+
 
 void MoveCamera()
 {
