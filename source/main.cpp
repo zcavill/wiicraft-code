@@ -30,6 +30,7 @@
 #include "World.hpp"
 #include "Image.hpp"
 #include "map.h"
+#include "debug.h"
 #include "main.h"
 
 extern "C" {
@@ -96,6 +97,9 @@ int main(int argc, char **argv)
 	__exception_setreload(10);
 	Initialize();
 	fatMountSimple("sd", &__io_wiisd);
+	#ifdef USBGECKO
+	Debug("fatMountSimple() Done");
+	#endif
 	
 	//MAP mainMAP;
 	
@@ -117,19 +121,30 @@ int main(int argc, char **argv)
 		sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
 		if(test == 115){ fatDevice = FAT_DEVICE_SD; } //first character = s
 		else if(test == 117){ fatDevice = FAT_DEVICE_USB; } //first character = u
+	#ifdef USBGECKO
+	Debug("Check if user has a SD or USB Done");
+	#endif
 	
 	//Init's that's can't be made in c:
 	
 	//API:
 	API mainAPI;
+	#ifdef USBGECKO
+	Debug("mainAPI() Done");
+	#endif
 	mainAPI.initAPI();
-	
+	#ifdef USBGECKO
+	Debug("initAPI() Done");
+	#endif
 	bool debugText = true;
 	
 	//END OF INIT'S
 	
 	Image grass((uint8_t *)grass_png);
 	Image stone((uint8_t *)stone_png);
+	#ifdef USBGECKO
+	Debug("Image() Done");
+	#endif
 
 
 
@@ -165,6 +180,9 @@ int main(int argc, char **argv)
 		if (pressed & WPAD_BUTTON_HOME ) break;
     if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
 	}
+	#ifdef USBGECKO
+	Debug("Main While(1) Done");
+	#endif
    Deinitialize();
    exit(0);
 }
