@@ -31,11 +31,11 @@ MAP::MAP(){
 	#endif
 	createMapArray();
 	#ifdef USBGECKO
-	Debug("Done With createMapArray();")
+	Debug("Done With createMapArray();");
 	#endif
 	generateMap();
 	#ifdef USBGECKO
-	Debug("Done With generateMap();")
+	Debug("Done With generateMap();");
 	Debug("Map() Ended");
 	#endif
 }
