@@ -11,7 +11,7 @@
 	#endif
 	/* __cplusplus */
 
-	s32 DebugStart (bool gecko, char *fn);
+	s32 DebugStart (bool gecko, const char *fn);
 	void DebugStop (void);
 	void Debug (const char *text, ...);
 	void Debug_hexdump(void *d, int len);

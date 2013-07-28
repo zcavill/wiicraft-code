@@ -19,7 +19,7 @@ static int started = 0;
 static int filelog = 0;
 static int geckolog = 0;
 
-s32 DebugStart (bool gecko, char *fn)
+s32 DebugStart (bool gecko, const char *fn)
 	{
 
 	filelog = 0;

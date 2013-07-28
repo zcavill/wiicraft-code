@@ -37,49 +37,54 @@ void UpdatePad()
 }
 
 u32 DetectInput(void) {
-	expansion_t e; // Classic Controller or Nunchuck
-	WPAD_ScanPads(); // Scan the Wii remotes
-	WPAD_Expansion(0, &e); // Grab data about expansion
-	u32 pressed = WPAD_ButtonsDown(0); //Store pressed buttons
-	
-	if (pressed && (e.type == WPAD_EXP_CLASSIC))
+	pressed = 0;
+	// Wii Remote (and Classic Controller) take precedence over GC to save time
+	if (WPAD_ScanPads() > WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
 	{
+		pressed = WPAD_ButtonsDown(0); //Store pressed buttons
+
 		// Convert to wiimote values
-		if (pressed & CLASSIC_CTRL_BUTTON_ZR) return WPAD_BUTTON_PLUS;
-		if (pressed & CLASSIC_CTRL_BUTTON_ZL) return WPAD_BUTTON_MINUS;
+		if (pressed & WPAD_CLASSIC_BUTTON_ZR) pressed |= WPAD_BUTTON_PLUS;
+		if (pressed & WPAD_CLASSIC_BUTTON_ZL) pressed |= WPAD_BUTTON_MINUS;
 
-		if (pressed & CLASSIC_CTRL_BUTTON_PLUS) return WPAD_BUTTON_PLUS;
-		if (pressed & CLASSIC_CTRL_BUTTON_MINUS) return WPAD_BUTTON_MINUS;
+		if (pressed & WPAD_CLASSIC_BUTTON_PLUS) pressed |= WPAD_BUTTON_PLUS;
+		if (pressed & WPAD_CLASSIC_BUTTON_MINUS) pressed |= WPAD_BUTTON_MINUS;
 
-		if (pressed & CLASSIC_CTRL_BUTTON_A) return WPAD_BUTTON_A;
-		if (pressed & CLASSIC_CTRL_BUTTON_B) return WPAD_BUTTON_B;
-		if (pressed & CLASSIC_CTRL_BUTTON_X) return WPAD_BUTTON_1;
-		if (pressed & CLASSIC_CTRL_BUTTON_Y) return WPAD_BUTTON_2;
-		if (pressed & CLASSIC_CTRL_BUTTON_HOME) return WPAD_BUTTON_HOME;
+		if (pressed & WPAD_CLASSIC_BUTTON_A) pressed |= WPAD_BUTTON_A;
+		if (pressed & WPAD_CLASSIC_BUTTON_B) pressed |= WPAD_BUTTON_B;
+		if (pressed & WPAD_CLASSIC_BUTTON_X) pressed |= WPAD_BUTTON_2;
+		if (pressed & WPAD_CLASSIC_BUTTON_Y) pressed |= WPAD_BUTTON_1;
+		if (pressed & WPAD_CLASSIC_BUTTON_HOME) pressed |= WPAD_BUTTON_HOME;
+		
+		if (pressed & WPAD_CLASSIC_BUTTON_UP) pressed |= WPAD_BUTTON_UP;
+		if (pressed & WPAD_CLASSIC_BUTTON_DOWN) pressed |= WPAD_BUTTON_DOWN;
+		if (pressed & WPAD_CLASSIC_BUTTON_LEFT) pressed |= WPAD_BUTTON_LEFT;
+		if (pressed & WPAD_CLASSIC_BUTTON_RIGHT) pressed |= WPAD_BUTTON_RIGHT;
 	}
-	
-	// Return Wii Remote or Nunchuck values
-	if (pressed)
-		return pressed;
-	
-	// No buttons on the Wii remote or its extensions were pressed
-	PAD_ScanPads();
-	pressed = PAD_ButtonsDown(PAD_CHAN0);
 
-	if (pressed) {
-		if (pressed & PAD_TRIGGER_R) return WPAD_BUTTON_PLUS;
-		if (pressed & PAD_TRIGGER_L) return WPAD_BUTTON_MINUS;
-		if (pressed & PAD_BUTTON_A) return WPAD_BUTTON_A;
-		if (pressed & PAD_BUTTON_B) return WPAD_BUTTON_B;
-		if (pressed & PAD_BUTTON_X) return WPAD_BUTTON_1;
-		if (pressed & PAD_BUTTON_Y) return WPAD_BUTTON_2;
-		if (pressed & PAD_BUTTON_MENU) return WPAD_BUTTON_HOME;
-		if (pressed & PAD_BUTTON_UP) return WPAD_BUTTON_UP;
-		if (pressed & PAD_BUTTON_LEFT) return WPAD_BUTTON_LEFT;
-		if (pressed & PAD_BUTTON_DOWN) return WPAD_BUTTON_DOWN;
-		if (pressed & PAD_BUTTON_RIGHT) return WPAD_BUTTON_RIGHT;
+	// Return Classic Controller and Wii Remote values
+	if (pressed) return pressed;
+	
+	// No buttons on the Wii remote or Classic Controller were pressed
+	if (PAD_ScanPads() > PAD_ERR_NONE)
+	{
+		pressed = PAD_ButtonsDown(0);
+		if (pressed) {
+			// Button on GC controller was pressed
+			if (pressed & PAD_TRIGGER_R) pressed |= WPAD_BUTTON_PLUS;
+			if (pressed & PAD_TRIGGER_L) pressed |= WPAD_BUTTON_MINUS;
+			if (pressed & PAD_BUTTON_A) pressed |= WPAD_BUTTON_A;
+			if (pressed & PAD_BUTTON_B) pressed |= WPAD_BUTTON_B;
+			if (pressed & PAD_BUTTON_X) pressed |= WPAD_BUTTON_1;
+			if (pressed & PAD_BUTTON_Y) pressed |= WPAD_BUTTON_2;
+			if (pressed & PAD_BUTTON_MENU) pressed |= WPAD_BUTTON_HOME;
+			if (pressed & PAD_BUTTON_UP) pressed |= WPAD_BUTTON_UP;
+			if (pressed & PAD_BUTTON_LEFT) pressed |= WPAD_BUTTON_LEFT;
+			if (pressed & PAD_BUTTON_DOWN) pressed |= WPAD_BUTTON_DOWN;
+			if (pressed & PAD_BUTTON_RIGHT) pressed |= WPAD_BUTTON_RIGHT;
+		}
 	}
-	return 0;
+	return pressed;
 }
 
 void EndVideo()
