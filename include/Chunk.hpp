@@ -1,5 +1,5 @@
-#ifndef _CHUNK_H_
-#define _CHUNK_H_
+#ifndef _CHUNK_HPP_
+#define _CHUNK_HPP_
 
 #include "Mesh.hpp"
 #include "Block.hpp"

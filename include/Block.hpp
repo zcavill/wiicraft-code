@@ -1,5 +1,5 @@
-#ifndef _BLOCK_H_
-#define _BLOCK_H_
+#ifndef _BLOCK_HPP_
+#define _BLOCK_HPP_
 
 #include <gccore.h>
 #include <Math_utils.h>

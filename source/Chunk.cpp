@@ -32,11 +32,11 @@
 				for(int x = 0;  x < CHUNK_SIZE; x++)
 				{
 					blockList[z][y][x] = new Block(this,
-												   position.x + x * BLOCK_SIZE,
-												   position.y + y * BLOCK_SIZE,
-												   position.z + z * BLOCK_SIZE,
-												   '0'//seeGeneratedMapBlock(z, y, x)
-											   );
+													position.x + x * BLOCK_SIZE,
+													position.y + y * BLOCK_SIZE,
+													position.z + z * BLOCK_SIZE,
+													'0'//seeGeneratedMapBlock(z, y, x)
+												);
 					blockList[z][y][x]->transparent = transp;  //<<<<<<<<<<<<<<<<<<<<!!!!!!!!!!!!!!
 				}	
 			}			

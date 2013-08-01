@@ -3,9 +3,11 @@
 	(c)Filiph Sandström
 									
 									*/
+
+#ifndef _MAP_H_
+#define _MAP_H_
+
 #include "ChunkHandler.hpp"
-#ifndef MAP_H
-#define MAP_H
 
 #define Xmap 32
 #define Ymap 32

@@ -1,6 +1,6 @@
 
-#ifndef _BOUNDINGBOX_H_
-#define _BOUNDINGBOX_H_
+#ifndef _BOUNDINGBOX_HPP_
+#define _BOUNDINGBOX_HPP_
 
 #include "Math_utils.h"
 
@@ -17,13 +17,13 @@ public:
 
 //Constructor
 	BoundingBox(){}
-	BoundingBox(float x, float y, float z, float w, float h, float d)  {box = (Box){x,y,z,w,h,d};}
-	BoundingBox(guVector pos, float w, float h, float d)               {box = (Box){pos.x,pos.y,pos.z,w,h,d};}
-	BoundingBox(guVector *pos, float w, float h, float d)              {box = (Box){pos->x,pos->y,pos->z,w,h,d};}
-	BoundingBox(Vertex32 pos, float w, float h, float d)               {box = (Box){pos.x,pos.y,pos.z,w,h,d};}
-	BoundingBox(Vertex32 *pos, float w, float h, float d)              {box = (Box){pos->x,pos->y,pos->z,w,h,d};}
-	BoundingBox(guVector pos, guVector size)                           {box = (Box){pos.x,pos.y,pos.z,size.x,size.y,size.z};}
-	BoundingBox(guVector *pos, guVector *size)                         {box = (Box){pos->x,pos->y,pos->z,size->x,size->y,size->z};}
+	BoundingBox(float x, float y, float z, float w, float h, float d)	{box = (Box){x,y,z,w,h,d};}
+	BoundingBox(guVector pos, float w, float h, float d)				{box = (Box){pos.x,pos.y,pos.z,w,h,d};}
+	BoundingBox(guVector *pos, float w, float h, float d)				{box = (Box){pos->x,pos->y,pos->z,w,h,d};}
+	BoundingBox(Vertex32 pos, float w, float h, float d)				{box = (Box){pos.x,pos.y,pos.z,w,h,d};}
+	BoundingBox(Vertex32 *pos, float w, float h, float d)				{box = (Box){pos->x,pos->y,pos->z,w,h,d};}
+	BoundingBox(guVector pos, guVector size)							{box = (Box){pos.x,pos.y,pos.z,size.x,size.y,size.z};}
+	BoundingBox(guVector *pos, guVector *size)							{box = (Box){pos->x,pos->y,pos->z,size->x,size->y,size->z};}
 	
 //Inline methods
 	bool dotCollision(guVector dot)

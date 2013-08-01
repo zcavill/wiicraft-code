@@ -1,3 +1,6 @@
+/*
+utils.cpp - Various functions that don't fit anywhere else
+*/
 #include "utils.h"
 
 void *xfb[2] = {NULL, NULL};
@@ -37,11 +40,10 @@ void UpdatePad()
 }
 
 u32 DetectInput(void) {
-	pressed = 0;
 	// Wii Remote (and Classic Controller) take precedence over GC to save time
 	if (WPAD_ScanPads() > WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
 	{
-		pressed = WPAD_ButtonsDown(0); //Store pressed buttons
+		pressed = WPAD_ButtonsHeld(0); //Store pressed buttons
 
 		// Convert to wiimote values
 		if (pressed & WPAD_CLASSIC_BUTTON_ZR) pressed |= WPAD_BUTTON_PLUS;
@@ -68,7 +70,7 @@ u32 DetectInput(void) {
 	// No buttons on the Wii remote or Classic Controller were pressed
 	if (PAD_ScanPads() > PAD_ERR_NONE)
 	{
-		pressed = PAD_ButtonsDown(0);
+		pressed = PAD_ButtonsHeld(0);
 		if (pressed) {
 			// Button on GC controller was pressed
 			if (pressed & PAD_TRIGGER_R) pressed |= WPAD_BUTTON_PLUS;
@@ -89,31 +91,31 @@ u32 DetectInput(void) {
 
 void EndVideo()
 {
-    free(MEM_K1_TO_K0(xfb[0])); xfb[0] = NULL;
-    free(MEM_K1_TO_K0(xfb[1])); xfb[1] = NULL;
-    free(gp_fifo); gp_fifo = NULL;	
+	free(MEM_K1_TO_K0(xfb[0])); xfb[0] = NULL;
+	free(MEM_K1_TO_K0(xfb[1])); xfb[1] = NULL;
+	free(gp_fifo); gp_fifo = NULL;	
 }
 
 void InitVideo()
 {
 	VIDEO_Init();
-    rmode = VIDEO_GetPreferredMode(NULL);
-    
-    xfb[0] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-    xfb[1] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-    
-    VIDEO_Configure (rmode);
-    VIDEO_SetNextFramebuffer(xfb[fb]);
-    VIDEO_SetBlack(FALSE);
-    VIDEO_Flush();
-    VIDEO_WaitVSync();
-    if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
-    fb ^= 1;
+	rmode = VIDEO_GetPreferredMode(NULL);
+	
+	xfb[0] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	xfb[1] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	
+	VIDEO_Configure (rmode);
+	VIDEO_SetNextFramebuffer(xfb[fb]);
+	VIDEO_SetBlack(FALSE);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
+	fb ^= 1;
 
-    gp_fifo = (u8 *) memalign(32, DEFAULT_FIFO_SIZE);
-    memset(gp_fifo, 0, DEFAULT_FIFO_SIZE);
-    GX_Init (gp_fifo, DEFAULT_FIFO_SIZE);
-    GX_SetCopyClear(background, 0x00ffffff);
+	gp_fifo = (u8 *) memalign(32, DEFAULT_FIFO_SIZE);
+	memset(gp_fifo, 0, DEFAULT_FIFO_SIZE);
+	GX_Init (gp_fifo, DEFAULT_FIFO_SIZE);
+	GX_SetCopyClear(background, 0x00ffffff);
 
 	// other gx setup
 	GX_SetViewport(0,0,rmode->fbWidth,rmode->efbHeight,0,1);
@@ -125,7 +127,7 @@ void InitVideo()
 	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_TRUE,rmode->vfilter);
 	GX_SetFieldMode(rmode->field_rendering,((rmode->viHeight==2*rmode->xfbHeight)?GX_ENABLE:GX_DISABLE));
 
-    if (rmode->aa)
+	if (rmode->aa)
 		GX_SetPixelFmt(GX_PF_RGB565_Z16, GX_ZC_LINEAR);
 	else
 		GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
@@ -137,7 +139,7 @@ void InitVideo()
 	// tells the flipper to expect direct data
 	GX_InvVtxCache();
 	GX_ClearVtxDesc();
-    GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
+	GX_SetVtxDesc(GX_VA_POS, GX_DIRECT);
 	GX_SetVtxDesc(GX_VA_CLR0, GX_NONE);
 	GX_SetVtxDesc(GX_VA_TEX0, GX_DIRECT);
 	
@@ -157,9 +159,8 @@ void InitVideo()
 	GX_SetAlphaUpdate(GX_TRUE);	
 	GX_SetCullMode(GX_CULL_NONE);	
 	
-    f32 w = rmode->viWidth;
-    f32 h = rmode->viHeight;	
-	guPerspective(projection, 45, (f32)w/(f32)h, 0.1F, 300.0F);
+
+	guPerspective(projection, 45, rmode->viWidth / rmode->viHeight, 0.1F, 300.0F);
 	GX_LoadProjectionMtx(projection, GX_PERSPECTIVE);
 	
 	
@@ -170,31 +171,24 @@ void InitVideo()
 	GX_InvalidateTexAll();
 	
 	//console
-		console_init(xfb[0],20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
+	console_init(xfb[0],20,20,rmode->fbWidth,rmode->xfbHeight,rmode->fbWidth*VI_DISPLAY_PIX_SZ);
 
 }
 
-
-void Clean()
-{
-    //GX_SetViewport(0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
-    VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-	printf("\x1b[%d;%dH", 2, 0);
-}
 
 void SwapBuffer()
 {
-    GX_DrawDone();
-    
-    GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
-    GX_SetColorUpdate(GX_TRUE);
-    GX_CopyDisp(xfb[fb],GX_TRUE);
+	GX_DrawDone();
+	
+	GX_SetZMode(GX_TRUE, GX_LEQUAL, GX_TRUE);
+	GX_SetColorUpdate(GX_TRUE);
+	GX_CopyDisp(xfb[fb],GX_TRUE);
 
-    VIDEO_SetNextFramebuffer(xfb[fb]);
-    VIDEO_Flush();
-    VIDEO_WaitVSync();
-    
-    fb ^= 1;		// flip framebuffer
+	VIDEO_SetNextFramebuffer(xfb[fb]);
+	VIDEO_Flush();
+	VIDEO_WaitVSync();
+	
+	fb ^= 1;		// flip framebuffer
 }
 
 void DrawCubeTex(float x, float y, float z)  //THIS IS A PROVISIONAL SHITTY FUNCTION, JUST TESTING
@@ -324,26 +318,26 @@ void DrawCube(float x, float y, float z)  //THIS IS A PROVISIONAL SHITTY FUNCTIO
 
 
 //FPS
-    unsigned long lastTime, currentTime, diffTime;
-    unsigned int frame_count;
+	unsigned long lastTime, currentTime, diffTime;
+	unsigned int frame_count;
 
-    void initFPS()
-    {
-        currentTime = getTime();
-        lastTime = currentTime;
-        frame_count = 0;
-    }
+	void initFPS()
+	{
+		currentTime = getTime();
+		lastTime = currentTime;
+		frame_count = 0;
+	}
 
-    void FPS(float *fps_var)
-    {
-        frame_count++;
-        currentTime = getTime();
-        diffTime = currentTime - lastTime;
-        if(diffTime >= 1000)
-        {
-            *fps_var = (float)frame_count/(diffTime/1000.0f);
-            frame_count = 0;
-            lastTime = getTime();
-        }
-    }
-    
+	void FPS(float *fps_var)
+	{
+		frame_count++;
+		currentTime = getTime();
+		diffTime = currentTime - lastTime;
+		if(diffTime >= 1000)
+		{
+			*fps_var = (float)frame_count/(diffTime/1000.0f);
+			frame_count = 0;
+			lastTime = getTime();
+		}
+	}
+	

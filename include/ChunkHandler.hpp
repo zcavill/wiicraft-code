@@ -1,5 +1,5 @@
-#ifndef _CHUNKHANDLER_H_
-#define _CHUNKHANDLER_H_
+#ifndef _CHUNKHANDLER_HPP_
+#define _CHUNKHANDLER_HPP_
 
 #include <stdio.h>
 #include <vector>
