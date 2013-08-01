@@ -121,11 +121,11 @@
 		if(chunkPointer != NULL)
 		{
 			if(chunkPointer->index.x >= 0 && chunkPointer->index.x < WORLD_SIZE &&
-			   chunkPointer->index.y >= 0 && chunkPointer->index.y < WORLD_SIZE &&
-			   chunkPointer->index.z >= 0 && chunkPointer->index.z < WORLD_SIZE)
-			   {
+				chunkPointer->index.y >= 0 && chunkPointer->index.y < WORLD_SIZE &&
+				chunkPointer->index.z >= 0 && chunkPointer->index.z < WORLD_SIZE)
+				{
 					return true;
-			   }
+				}
 		}
 		return false;
 	}	

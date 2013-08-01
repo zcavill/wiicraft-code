@@ -1,5 +1,5 @@
-#ifndef ConfigFile_H
-#define ConfigFile_H
+#ifndef _CONFIGFILE_HPP_
+#define _CONFIGFILE_HPP_
 
 #include <iostream>
 #include <string>

@@ -2,7 +2,7 @@
 
 	(C)WiiCraft theme
 
-									*/
+*/
 
 #include <gccore.h>
 #include <wiiuse/wpad.h>
@@ -32,20 +32,12 @@
 #include "map.h"
 #include "debug.h"
 #include "main.h"
+#include "utils.h"
 
 extern "C" {
 	extern void __exception_setreload(int t);
 }
 
-//Extern variables
-	extern Mtx44 projection;
-	extern Mtx view, model, modelview;
-	extern float fps;
-	extern u32 pressed;
-	extern u32 expansion_type;
-	extern struct joystick_t *js;
-	extern WPADData *wmote_data;
-//
 
 const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
 const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
@@ -118,9 +110,9 @@ int main(int argc, char **argv)
 	
 	//Check if it uses SD or USB:
 	char test;
-		sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
-		if(test == 115){ fatDevice = FAT_DEVICE_SD; } //first character = s
-		else if(test == 117){ fatDevice = FAT_DEVICE_USB; } //first character = u
+	sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
+	if(test == 115){ fatDevice = FAT_DEVICE_SD; } //first character = s
+	else if(test == 117){ fatDevice = FAT_DEVICE_USB; } //first character = u
 	#ifdef USBGECKO
 	Debug("Check if user has a SD or USB Done");
 	#endif
@@ -151,40 +143,41 @@ int main(int argc, char **argv)
 
   
   /*----------------------------------------<Main Game Loop>-----------------------------------------*/
-	while(1){
-		Clean();
+	while(true)
+	{
 		UpdatePad();
-      
-      if(debugText == true){
-        printf("FPS: %f\n", fps);
-        printf("Posx: %f   posy: %f  posz: %f\n", world.player->position.x, world.player->position.y, world.player->position.z);
-        printf("Pitch: %f   yaw: %f\n", world.player->pitch, world.player->yaw);
-        printf("Size: %i\n", world.chunkHandler->chunkList.size());
-        printf("ChunkX: %i  chunkY: %i  chunkZ: %i\n", world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
-        printf("BlockX: %i  blockY: %i  blockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
-        printf("Player Status: %s  velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
-      }
+		  
+		if(debugText == true){
+			//GX_SetViewport(0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
+			VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+			printf("\x1b[%d;%dH", 2, 0);
+			printf("FPS: %f\n", fps);
+			printf("Posx: %f   posy: %f  posz: %f\n", world.player->position.x, world.player->position.y, world.player->position.z);
+			printf("Pitch: %f   yaw: %f\n", world.player->pitch, world.player->yaw);
+			printf("Size: %i\n", world.chunkHandler->chunkList.size());
+			printf("ChunkX: %i  chunkY: %i  chunkZ: %i\n", world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
+			printf("BlockX: %i  blockY: %i  blockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
+			printf("Player Status: %s  velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
+		}
 
 		grass.setGX(GX_TEXMAP0);
 		DrawCubeTex(0,0,-5);
-		
+
 		world.update();
 		world.drawChunks();
-
-			
 
 		MoveCamera();
 		UpdateCamera();
 		SwapBuffer();
 		FPS(&fps);
 		if (pressed & WPAD_BUTTON_HOME ) break;
-    if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
+		if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
 	}
 	#ifdef USBGECKO
-	Debug("Main While(1) Done");
+	Debug("Main While(true) Done");
 	#endif
-   Deinitialize();
-   exit(0);
+	Deinitialize();
+	exit(0);
 }
 /*----------------------------------------<End Of Main Game Loop>-----------------------------------------*/
 

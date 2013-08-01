@@ -63,7 +63,7 @@
 	Block *World::getBlockUnderPlayer(Vertex32 *block_pos)
 	{
 		return chunkHandler->getChunkP(player->chunk_x, player->chunk_y, player->chunk_z)->
-		                     getBlockP(player->block_x, player->block_y, player->block_z);
+							getBlockP(player->block_x, player->block_y, player->block_z);
 	}
 	
 	void World::getBlockBoundingBox(int chunk_x, int chunk_y, int chunk_z, int block_x, int block_y, int block_z, BoundingBox *bBox)

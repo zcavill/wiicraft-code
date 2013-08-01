@@ -3,8 +3,8 @@
 	(c)Filiph Sandström. ETC.
 									
 									*/
-#ifndef mainAPI_H
-#define mainAPI_H
+#ifndef _MAINAPI_HPP_
+#define _MAINAPI_HPP_
 
 #define APIVERISON "01"
 #define APILANGUE "LUA"

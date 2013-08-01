@@ -1,5 +1,5 @@
-#ifndef _WORLD_H_
-#define _WORLD_H_
+#ifndef _WORLD_HPP_
+#define _WORLD_HPP_
 
 #include <gccore.h>
 #include "Player.hpp"

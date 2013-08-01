@@ -1,5 +1,5 @@
-#ifndef _CAMERA_H_
-#define _CAMERA_H_
+#ifndef _CAMERA_HPP_
+#define _CAMERA_HPP_
 
 #include <gccore.h>
 #include <math.h>

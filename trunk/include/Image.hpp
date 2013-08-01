@@ -1,5 +1,5 @@
-#ifndef _IMAGE_H_
-#define _IMAGE_H_
+#ifndef _IMAGE_HPP_
+#define _IMAGE_HPP_
 
 #include <gccore.h>
 #include <png.h>

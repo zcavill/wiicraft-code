@@ -3,8 +3,8 @@
 	(c)Filiph Sandström. ETC.
 									
 									*/
-#ifndef AUTO_H
-#define AUTO_H
+#ifndef _AUTO_UPDATER_H_
+#define _AUTO_UPDATER_H_
 
 #include <iostream>
 #include <fstream>

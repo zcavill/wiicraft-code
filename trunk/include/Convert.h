@@ -1,5 +1,5 @@
-#ifndef Convert_H
-#define Convert_H
+#ifndef _CONVERT_H_
+#define _CONVERT_H_
 
 #include <iostream>
 #include <string>
