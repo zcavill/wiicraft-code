@@ -1,3 +1,16 @@
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, version 3.0.
+ 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License 3.0 for more details.
+
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+// Copyright (C) 2012-2013    filfat, xerpi, JoostinOnline
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 #include <wiikeyboard/keyboard.h>
@@ -57,8 +70,10 @@ void WIILIGHT_SetLevel(int level){
 	light_timeoff.tv_nsec = level_off;
 }
 
-void update_check();
-s32 create_and_request_file(char* path1, char* appname, char *filename);
+void clearScreen();
+//void cleanup();
+//void update_check();
+//s32 create_and_request_file(char* path1, char* appname, char *filename);
 
 int main(int argc, char **argv)
 {	
@@ -66,15 +81,14 @@ int main(int argc, char **argv)
 	__exception_setreload(10);
 	
 	
+	WIILIGHT_SetLevel(255);
+	WIILIGHT_TurnOn();
 	
 	fatMountSimple("sd", &__io_wiisd);
 	
-	mkdir("sd:/wiicraft", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	//dosent work yet have no idea why 0_o
+	//mkdir("sd:/wiicraft", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 	
-	//Disk light turn on and init
-	//WIILIGHT_Init();
-	WIILIGHT_SetLevel(255);
-	WIILIGHT_TurnOn();
 	
 	//Only Supports SD at the moment
 	fatDevice = FAT_DEVICE_SD;
@@ -92,6 +106,7 @@ int main(int argc, char **argv)
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
+	WIILIGHT_TurnOff();
 	printf("\x1b[2;0H");
 	
 	printf("Welcome To WiiCraft Launcher!\n");
@@ -120,12 +135,24 @@ int main(int argc, char **argv)
 		}
 		VIDEO_WaitVSync();
 	}
-	update_check();
+	//if(wcupdating == true){ update_check();}
+	clearScreen();
 	printf("Exiting...\n");
 	exit(0);
+	//cleanup();
 }
 
-void update_check() {
+void clearScreen(){
+	VIDEO_ClearFrameBuffer (rmode, xfb, COLOR_BLACK);
+	printf("\x1b[2;0H");
+}
+
+//void cleanup(){
+//	WPAD_Shutdown();
+//	exit(0);
+//}
+
+/*void update_check() {
 	
 	printf("\n\nChecking for WiiCraft Updates...\n");
 	
@@ -374,7 +401,7 @@ s32 create_and_request_file(char* path1, char* appname, char *filename) {
 	//printf("Received %s%s.\n", appname, filename);
 	
 	return 1;
-}
+}*/
 
 
 
