@@ -1,7 +1,7 @@
 #labels Phase-Implementation
 = Introduction =
 
-First of all this page is in WIP! and the code havent bean released yet!
+These Functions Do Not Work Yet! Don't even think about trying them.
 
 Functions:
 <code language="C++">
