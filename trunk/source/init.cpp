@@ -35,7 +35,6 @@ void Initialize(void){
 	MP3Player_Init();
 	#ifdef USBGECKO
 	Debug("MP3Player_Init Done");
-	Debug("Done With DebugStart\n");
 	#endif
 
 }

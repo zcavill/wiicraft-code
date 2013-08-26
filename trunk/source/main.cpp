@@ -9,12 +9,6 @@
 
 // Copyright (C) 2012-2013	filfat, xerpi, JoostinOnline
 
-/*
-
-	(C)WiiCraft theme
-
-*/
-
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 #include <wiikeyboard/keyboard.h>
@@ -125,7 +119,7 @@ int main(int argc, char **argv)
 	if(test == 115){ fatDevice = FAT_DEVICE_SD; } //first character = s
 	else if(test == 117){ fatDevice = FAT_DEVICE_USB; } //first character = u
 	#ifdef USBGECKO
-	Debug("Check if user has a SD or USB Done");
+	Debug("The User Has a %s", fatDevice);
 	#endif
 	
 	//API:
@@ -145,12 +139,9 @@ int main(int argc, char **argv)
 	Image stone((uint8_t *)stone_png);
 	#ifdef USBGECKO
 	Debug("Image() Done");
+	Debug("All Inits is Done");
 	#endif
 
-
-
-
-  
   /*----------------------------------------<Main Game Loop>-----------------------------------------*/
 	while(true)
 	{
@@ -183,7 +174,7 @@ int main(int argc, char **argv)
 		if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
 	}
 	#ifdef USBGECKO
-	Debug("Main While(true) Done");
+	Debug("--<Main Loop Exited>--");
 	#endif
 	Deinitialize();
 	exit(0);
