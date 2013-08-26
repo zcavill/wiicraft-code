@@ -50,9 +50,9 @@ extern "C" {
 }
 
 
-const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
-const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
-const unsigned int PORT = 8593; //PORT
+//const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
+//const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
+//const unsigned int PORT = 8593; //PORT
 
 int fatDevice = FAT_DEVICE_NONE;
 
@@ -127,8 +127,6 @@ int main(int argc, char **argv)
 	#ifdef USBGECKO
 	Debug("Check if user has a SD or USB Done");
 	#endif
-	
-	//Init's that's can't be made in c:
 	
 	//API:
 	API mainAPI;

@@ -2,8 +2,8 @@
 <app version="1">
 	<name>WiiCraft</name>
 	<coder>filfat</coder>
-	<version>0.6.0</version>
-	<release_date>20130124000000</release_date>
-	<short_description>WiiCraft 0.6</short_description>
-	<long_description>Voxel Based Game For The Nintendo Wii!!!</long_description>
+	<version>0.6.2</version>
+	<release_date>20130826</release_date>
+	<short_description>WiiCraft 0.6.2</short_description>
+	<long_description>Voxel Based Game For The Nintendo Wii, Made by filfat Xerpi JoostinOnline. See http://www.googlecode.com/wiicraft</long_description>
 </app>

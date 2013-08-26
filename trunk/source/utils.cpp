@@ -1,18 +1,8 @@
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, version 3.0.
-
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License 3.0 for more details.
-
-// Copyright (C) 2012-2013	filfat, xerpi, JoostinOnline
-
 /*
 utils.cpp - Various functions that don't fit anywhere else
 */
 #include "utils.h"
+#include "debug.h"
 
 void *xfb[2] = {NULL, NULL};
 GXRModeObj *rmode;
@@ -73,6 +63,11 @@ u32 DetectInput(void) {
 		if (pressed & WPAD_CLASSIC_BUTTON_DOWN) pressed |= WPAD_BUTTON_DOWN;
 		if (pressed & WPAD_CLASSIC_BUTTON_LEFT) pressed |= WPAD_BUTTON_LEFT;
 		if (pressed & WPAD_CLASSIC_BUTTON_RIGHT) pressed |= WPAD_BUTTON_RIGHT;
+		
+		#ifdef USBGECKO
+		Debug("		Button layout defined\n");
+		#endif
+
 	}
 
 	// Return Classic Controller and Wii Remote values
@@ -103,22 +98,54 @@ u32 DetectInput(void) {
 void EndVideo()
 {
 	free(MEM_K1_TO_K0(xfb[0])); xfb[0] = NULL;
+	#ifdef USBGECKO
+	Debug("		xfb[0] Removed From Memory\n");
+	#endif
 	free(MEM_K1_TO_K0(xfb[1])); xfb[1] = NULL;
-	free(gp_fifo); gp_fifo = NULL;	
+	#ifdef USBGECKO
+	Debug("		xfb[1] Removed From Memory\n");
+	#endif
+	free(gp_fifo); gp_fifo = NULL;
+	#ifdef USBGECKO
+	Debug("		gp_fifo Removed From Memory\n");
+	#endif
 }
 
 void InitVideo()
 {
 	VIDEO_Init();
+
 	rmode = VIDEO_GetPreferredMode(NULL);
+	#ifdef USBGECKO
+	Debug("		rmode Loaded into memory\n");
+	#endif
+
 	
 	xfb[0] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	#ifdef USBGECKO
+	Debug("		xfb[0] Loaded into memory\n");
+	#endif
 	xfb[1] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
+	#ifdef USBGECKO
+	Debug("		xfb[1] Loaded into memory\n");
+	#endif
 	
 	VIDEO_Configure (rmode);
+	#ifdef USBGECKO
+	Debug("		Configured rmode\n");
+	#endif
 	VIDEO_SetNextFramebuffer(xfb[fb]);
+	#ifdef USBGECKO
+	Debug("		Changed Framebuffer to xfb[fb]\n");
+	#endif
 	VIDEO_SetBlack(FALSE);
+	#ifdef USBGECKO
+	Debug("		Set video BlackMode to false\n");
+	#endif
 	VIDEO_Flush();
+	#ifdef USBGECKO
+	Debug("		Flushed Video\n");
+	#endif
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 	fb ^= 1;
