@@ -23,7 +23,7 @@
 //#include <GEMS_WifiWii.h>
 
 #include "grass_png.h"
-#include "stone_png.h"
+#include "block_png.h"
 
 //Classes:
 #include "debug.h"
@@ -136,7 +136,7 @@ int main(int argc, char **argv)
 	//END OF INIT'S
 	
 	Image grass((uint8_t *)grass_png);
-	Image stone((uint8_t *)stone_png);
+	Image block((uint8_t *)block_png);
 	#ifdef USBGECKO
 	Debug("Image() Done");
 	Debug("All Inits is Done");
@@ -160,7 +160,7 @@ int main(int argc, char **argv)
 			printf("Player Status: %s  velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
 		}
 
-		grass.setGX(GX_TEXMAP0);
+		block.setGX(GX_TEXMAP0);
 		DrawCubeTex(0,0,-5);
 
 		world.update();
