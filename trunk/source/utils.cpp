@@ -99,15 +99,15 @@ void EndVideo()
 {
 	free(MEM_K1_TO_K0(xfb[0])); xfb[0] = NULL;
 	#ifdef USBGECKO
-	Debug("		xfb[0] Removed From Memory");
+	Debug("Video:		xfb[0] Removed From Memory");
 	#endif
 	free(MEM_K1_TO_K0(xfb[1])); xfb[1] = NULL;
 	#ifdef USBGECKO
-	Debug("		xfb[1] Removed From Memory");
+	Debug("Video:		xfb[1] Removed From Memory");
 	#endif
 	free(gp_fifo); gp_fifo = NULL;
 	#ifdef USBGECKO
-	Debug("		gp_fifo Removed From Memory");
+	Debug("Video:		gp_fifo Removed From Memory");
 	#endif
 }
 
@@ -117,34 +117,34 @@ void InitVideo()
 
 	rmode = VIDEO_GetPreferredMode(NULL);
 	#ifdef USBGECKO
-	Debug("		rmode Loaded into memory");
+	Debug("Video:		rmode Loaded into memory");
 	#endif
 
 	
 	xfb[0] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 	#ifdef USBGECKO
-	Debug("		xfb[0] Loaded into memory");
+	Debug("Video:		xfb[0] Loaded into memory");
 	#endif
 	xfb[1] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
 	#ifdef USBGECKO
-	Debug("		xfb[1] Loaded into memory");
+	Debug("Video:		xfb[1] Loaded into memory");
 	#endif
 	
 	VIDEO_Configure (rmode);
 	#ifdef USBGECKO
-	Debug("		Configured rmode\n");
+	Debug("Video:		Configured rmode\n");
 	#endif
 	VIDEO_SetNextFramebuffer(xfb[fb]);
 	#ifdef USBGECKO
-	Debug("		Changed Framebuffer to xfb[fb]");
+	Debug("Video:		Changed Framebuffer to xfb[fb]");
 	#endif
 	VIDEO_SetBlack(FALSE);
 	#ifdef USBGECKO
-	Debug("		Set video BlackMode to false");
+	Debug("Video:		Set video BlackMode to false");
 	#endif
 	VIDEO_Flush();
 	#ifdef USBGECKO
-	Debug("		Flushed Video");
+	Debug("Video:		Flushed Video");
 	#endif
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
