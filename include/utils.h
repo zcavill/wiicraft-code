@@ -40,6 +40,7 @@ extern Mtx view, model, modelview;
 extern float fps;
 
 extern u32 pressed; // GC, Wii Remote, Nuchuck, or Classic Controller input
+extern u32 held; // GC, Wii Remote, Nuchuck, or Classic Controller input
 extern u32 expansion_type;
 extern struct joystick_t *js;
 extern WPADData *wmote_data;
@@ -62,6 +63,7 @@ void DrawCubeTex(float x, float y, float z);
 //FPS
 void initFPS();
 void FPS(float *fps_var);
+//Menu
 
 
 #endif
