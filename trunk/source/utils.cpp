@@ -40,9 +40,8 @@ void UpdatePad()
 	pressed = WPAD_ButtonsHeld(0);
 }
 
-u32 DetectInput(void) {
-	// Wii Remote (and Classic Controller) take precedence over GC to save time
-	if (WPAD_ScanPads() > WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
+u32 DetectInput(void) { // Wii Remote (and Classic Controller) take precedence over GC to save time
+	if (WPAD_ScanPads() > WPAD_ERR_NONE) //Scan the Wii remotes.  If there any problems, skip checking buttons
 	{
 		pressed = WPAD_ButtonsHeld(0); //Store pressed buttons
 
@@ -377,5 +376,4 @@ void DrawCube(float x, float y, float z)  //THIS IS A PROVISIONAL SHITTY FUNCTIO
 			frame_count = 0;
 			lastTime = getTime();
 		}
-	}
-	
+}

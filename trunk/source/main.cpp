@@ -50,7 +50,7 @@ extern "C" {
 
 int fatDevice = FAT_DEVICE_NONE;
 
-//--------------------------------------------------
+	//--------------------------------------------------
 	//Wiilight
 	//--------------------------------------------------
 	lwp_t light_thread = 0;
@@ -87,6 +87,7 @@ void WIILIGHT_SetLevel(int level){
 World world;
 void UpdateCamera();
 void MoveCamera();
+int Menu(int texture);
 
 int main(int argc, char **argv)
 {	
@@ -98,22 +99,14 @@ int main(int argc, char **argv)
 	Debug("fatMountSimple() Done");
 	#endif
 	
-	//MAP mainMAP;
-	
-	
-	//SingletonMap::Instance()->defineMapclass();
-	
-	
 	//Disk light turn on and init
 	//WIILIGHT_Init();
 	WIILIGHT_SetLevel(255);
 	WIILIGHT_TurnOn();
 	
-	//if(*argv[1] == NULL)
-	//	fatDevice = FAT_DEVICE_NONE;
-	//
+	//MAP mainMAP;
 	
-	//Check if it uses SD or USB:
+	//Check if the user uses a SD or a USB
 	char test;
 	sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
 	if(test == 115){ fatDevice = FAT_DEVICE_SD; } //first character = s
@@ -123,15 +116,18 @@ int main(int argc, char **argv)
 	//#endif
 	
 	//API:
-	API mainAPI;
-	#ifdef USBGECKO
-	Debug("mainAPI() Done");
-	#endif
-	mainAPI.initAPI();
-	#ifdef USBGECKO
-	Debug("initAPI() Done");
-	#endif
-	bool debugText = true;
+	//API mainAPI;
+	//#ifdef USBGECKO
+	//Debug("mainAPI() Done");
+	//#endif
+	//mainAPI.initAPI();
+	//#ifdef USBGECKO
+	//Debug("initAPI() Done");
+	//#endif
+	bool debugText = false;
+	bool running = true;
+	int texture = 0;
+	bool mainGame = true;
 	
 	//END OF INIT'S
 	
@@ -141,26 +137,99 @@ int main(int argc, char **argv)
 	Debug("Image() Done");
 	Debug("All Inits is Done");
 	#endif
+	
+	/*while(true){
+		if(false == !false){
+			test:printf("TEST IF GOTO WORKS\n");
+		}
+		goto test;
+	}*/
+	
+	
+	bool menuRun = true;
+	int choose = 0;
+	
+	printf("\x1b[2;0H");
+	VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+	SwapBuffer();
+	
+	mainMenu:while(menuRun){
+		printf("\x1b[2;0H");
+		VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+		SwapBuffer();
+		printf("WiiCraft %s\n", "6.3");
+		printf("========[Menu]========\n");
+		printf("[*]A: Start Game\n");
+		if(texture == 0){
+			printf("[*]B: Set Block Texture To: %s             \n", "Grass");
+		}
+		else if(texture == 1){
+			printf("[*]B: Set Block Texture To: %s              \n", "Dirt");
+		}
+		printf("[*]Home: Quit Game\n");
+		while(running == true) {
+			UpdatePad();
+			if(WPAD_ButtonsDown(0) & WPAD_BUTTON_A){ //make sure that the function only run one time every press
+				choose = 1;
+				printf("\x1b[2;0H");
+				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+				SwapBuffer();
+				running = false;
+			}
+			else if(WPAD_ButtonsDown(0) & WPAD_BUTTON_B){ //make sure that the function only run one time every press
+				choose = 0;
+				if(texture == 0){
+					texture = 1;
+				}
+				else if(texture == 1){
+					texture = 0;
+				}
+				printf("\x1b[2;0H");
+				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+				SwapBuffer();
+				goto mainMenu;
+			}
+			else if(pressed & WPAD_BUTTON_HOME){
+				choose = 3;
+				printf("\x1b[2;0H");
+				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+				SwapBuffer();
+				printf("Stoping WiiCraft...");
+				running = false;
+			}
+			
+		}
+		if(choose == 1 || choose == 3){
+			break;
+		}
+	}
 
+	
   /*----------------------------------------<Main Game Loop>-----------------------------------------*/
-	while(true)
-	{
+  if(choose == 1){
+	while(mainGame == true && choose == 1){
 		UpdatePad();
-		  
+		printf("\x1b[%d;%dH", 2, 0);
+		printf("Press + For Pause Menu");
 		if(debugText == true){
 			//GX_SetViewport(0, 0, rmode->fbWidth, rmode->efbHeight, 0, 1);
 			VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
 			printf("\x1b[%d;%dH", 2, 0);
 			printf("FPS: %f\n", fps);
-			printf("Posx: %f   posy: %f  posz: %f\n", world.player->position.x, world.player->position.y, world.player->position.z);
-			printf("Pitch: %f   yaw: %f\n", world.player->pitch, world.player->yaw);
+			printf("PosX: %f   PosY: %f  PosZ: %f\n", world.player->position.x, world.player->position.y, world.player->position.z);
+			printf("Pitch: %f   Yaw: %f\n", world.player->pitch, world.player->yaw);
 			printf("Size: %i\n", world.chunkHandler->chunkList.size());
-			printf("ChunkX: %i  chunkY: %i  chunkZ: %i\n", world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
-			printf("BlockX: %i  blockY: %i  blockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
-			printf("Player Status: %s  velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
+			printf("ChunkX: %i  ChunkY: %i  ChunkZ: %i\n", world.player->chunk_x, world.player->chunk_y, world.player->chunk_z);
+			printf("BlockX: %i  BlockY: %i  BlockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
+			printf("Player Status: %s  Velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
 		}
-
+		
+		if(texture == 0){
+		grass.setGX(GX_TEXMAP0);
+		}
+		else if(texture == 1){
 		block.setGX(GX_TEXMAP0);
+		}
 		DrawCubeTex(0,0,-5);
 
 		world.update();
@@ -170,14 +239,48 @@ int main(int argc, char **argv)
 		UpdateCamera();
 		SwapBuffer();
 		FPS(&fps);
-		if (pressed & WPAD_BUTTON_HOME ) break;
+		if (pressed & WPAD_BUTTON_PLUS ){
+			/*printf("========[Pause]========\n");
+			printf("[*]A: Resume\n");
+			printf("[*]Home: Quit to Menu\n");
+			while(1){
+				if(pressed & WPAD_BUTTON_A){
+					break;
+				}
+				else if(pressed & WPAD_BUTTON_HOME){*/
+					//--------
+					printf("\x1b[2;0H");
+					VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+					SwapBuffer();
+					//--------
+					printf("\x1b[2;0H");
+					VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+					SwapBuffer();
+					//--------
+					#ifdef USBGECKO
+					Debug("--<Main Loop Exited>--");
+					#endif
+					choose = 0;
+					running = true;
+					goto mainMenu;
+				/*}
+			}
+			continue;*/
+		}
 		if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
 	}
-	#ifdef USBGECKO
-	Debug("--<Main Loop Exited>--");
-	#endif
+}
+else if(choose == 3){
+	printf("\x1b[2;0H");
+	VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+	SwapBuffer();
 	Deinitialize();
 	exit(0);
+}
+	#ifdef USBGECKO
+	Debug("ERROR: PASSED LAST LINE OF CODE!");
+	#endif
+	exit(-1);
 }
 /*----------------------------------------<End Of Main Game Loop>-----------------------------------------*/
 
@@ -274,6 +377,10 @@ void UpdateCamera()
 {
 	guMtxConcat(world.getCameraView(), model, modelview);
 	GX_LoadPosMtxImm(modelview, GX_PNMTX0);
+}
+
+
+int Menu(int texture){return false;
 }
 
 
