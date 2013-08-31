@@ -26,6 +26,10 @@
 #define getTime() (ticks_to_millisecs(gettime()))
 #define DEFAULT_FIFO_SIZE	(256*1024)
 
+// Values for DetectInput
+#define DI_BUTTONS_HELD		0
+#define DI_BUTTONS_DOWN		1
+
 //Variables
 extern void *xfb[2];
 extern GXRModeObj *rmode;
@@ -48,7 +52,7 @@ extern WPADData *wmote_data;
 //Functions
 void InitPad();
 void UpdatePad();
-u32 DetectInput(void);
+u32 DetectInput(u8 DownOrHeld);
 void EndVideo();
 void InitVideo();
 void SwapBuffer();
