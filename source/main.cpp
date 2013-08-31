@@ -23,6 +23,7 @@
 //#include <GEMS_WifiWii.h>
 
 #include "grass_png.h"
+#include "dirt_png.h"
 #include "stone_png.h"
 
 //Classes:
@@ -126,13 +127,14 @@ int main(int argc, char **argv)
 	//#endif
 	bool debugText = false;
 	bool running = true;
-	int texture = 0;
+	int texture = 1;
 	bool mainGame = true;
 	
 	//END OF INIT'S
 	
 	Image grass((uint8_t *)grass_png);
-	Image block((uint8_t *)stone_png);
+	Image dirt((uint8_t *)dirt_png);
+	Image stone((uint8_t *)stone_png);
 	#ifdef USBGECKO
 	Debug("Image() Done");
 	Debug("All Inits is Done");
@@ -160,29 +162,37 @@ int main(int argc, char **argv)
 		printf("WiiCraft %s\n", "6.3");
 		printf("========[Menu]========\n");
 		printf("[*]A: Start Game\n");
-		if(texture == 0){
-			printf("[*]B: Set Block Texture To: %s             \n", "Grass");
+		switch(texture){
+			case 0:
+			
+			case 1:
+				printf("[*]B: Set Block Texture To: %s (Currently: %s)             \n", "Grass", "Stone");
+				break;
+			case 2:
+				printf("[*]B: Set Block Texture To: %s (Currently: %s)             \n", "Dirt", "Grass");
+				break;
+			case 3:
+				printf("[*]B: Set Block Texture To: %s (Currently: %s)              \n", "Stone", "Dirt");
+				break;
 		}
-		else if(texture == 1){
-			printf("[*]B: Set Block Texture To: %s              \n", "Dirt");
-		}
+		
 		printf("[*]Home: Quit Game\n");
 		while(running == true) {
 			UpdatePad();
-			if(DetectInput(DI_BUTTONS_DOWN) & WPAD_BUTTON_A){ //make sure that the function only run one time every press
+			if(WPAD_ButtonsDown(0) & WPAD_BUTTON_A){ //make sure that the function only run one time every press
 				choose = 1;
 				printf("\x1b[2;0H");
 				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
 				SwapBuffer();
 				running = false;
 			}
-			else if(DetectInput(DI_BUTTONS_DOWN) & WPAD_BUTTON_B){ //make sure that the function only run one time every press
+			else if(WPAD_ButtonsDown(0) & WPAD_BUTTON_B){ //make sure that the function only run one time every press
 				choose = 0;
-				if(texture == 0){
+				if(texture == 3){
 					texture = 1;
 				}
-				else if(texture == 1){
-					texture = 0;
+				else{
+					++texture;
 				}
 				printf("\x1b[2;0H");
 				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
@@ -223,12 +233,20 @@ int main(int argc, char **argv)
 			printf("BlockX: %i  BlockY: %i  BlockZ: %i\n", world.player->block_x, world.player->block_y, world.player->block_z);	
 			printf("Player Status: %s  Velocity.y: %f\n", world.player->status == ON_AIR ? "AIR" : "GROUND",world.player->velocity.y);
 		}
-		
-		if(texture == 0){
-		grass.setGX(GX_TEXMAP0);
-		}
-		else if(texture == 1){
-		block.setGX(GX_TEXMAP0);
+		switch(texture){
+			case 0:
+				break;
+			case 1:
+				stone.setGX(GX_TEXMAP0);
+				break;
+			case 2:
+				grass.setGX(GX_TEXMAP0);
+				break;
+			case 3:
+				dirt.setGX(GX_TEXMAP0);
+				break;
+			default:
+				break;
 		}
 		DrawCubeTex(0,0,-5);
 
