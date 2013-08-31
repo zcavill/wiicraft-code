@@ -40,6 +40,10 @@
 #include "main.h"
 #include "utils.h"
 
+//Font:
+#include <ft2build.h>
+#include FT_FREETYPE_H
+#include "rursus_compact_mono_ttf.h"
 extern "C" {
 	extern void __exception_setreload(int t);
 }
@@ -137,28 +141,25 @@ int main(int argc, char **argv)
 	Image stone((uint8_t *)stone_png);
 	#ifdef USBGECKO
 	Debug("Image() Done");
+	#endif
+	
+	//ADD OTHER INIT'S HERE
+	
+	#ifdef USBGECKO
 	Debug("All Inits is Done");
 	#endif
 	
-	/*while(true){
-		if(false == !false){
-			test:printf("TEST IF GOTO WORKS\n");
-		}
-		goto test;
-	}*/
-	
-	
 	bool menuRun = true;
 	int choose = 0;
-	
-	printf("\x1b[2;0H");
-	VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-	SwapBuffer();
+	bool Runned = false;
 	
 	mainMenu:while(menuRun){
-		printf("\x1b[2;0H");
-		VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-		SwapBuffer();
+		if(Runned){
+			printf("\x1b[2;0H");
+			VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+			SwapBuffer();
+		}
+		Runned = true;
 		printf("WiiCraft %s\n", "6.3");
 		printf("========[Menu]========\n");
 		printf("[*]A: Start Game\n");
@@ -183,7 +184,7 @@ int main(int argc, char **argv)
 				choose = 1;
 				printf("\x1b[2;0H");
 				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-				SwapBuffer();
+				//SwapBuffer();
 				running = false;
 			}
 			else if(WPAD_ButtonsDown(0) & WPAD_BUTTON_B){ //make sure that the function only run one time every press
@@ -196,17 +197,18 @@ int main(int argc, char **argv)
 				}
 				printf("\x1b[2;0H");
 				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-				SwapBuffer();
+				//SwapBuffer();
 				goto mainMenu;
 			}
 			else if(pressed & WPAD_BUTTON_HOME){
 				choose = 3;
 				printf("\x1b[2;0H");
 				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-				SwapBuffer();
+				//SwapBuffer();
 				printf("Stoping WiiCraft...");
 				running = false;
 			}
+			VIDEO_WaitVSync();
 			
 		}
 		if(choose == 1 || choose == 3){
@@ -266,11 +268,6 @@ int main(int argc, char **argv)
 					break;
 				}
 				else if(pressed & WPAD_BUTTON_HOME){*/
-					//--------
-					printf("\x1b[2;0H");
-					VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-					SwapBuffer();
-					//--------
 					printf("\x1b[2;0H");
 					VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
 					SwapBuffer();
@@ -286,6 +283,7 @@ int main(int argc, char **argv)
 			continue;*/
 		}
 		if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
+		VIDEO_WaitVSync();
 	}
 }
 else if(choose == 3){
