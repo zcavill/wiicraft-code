@@ -40,11 +40,18 @@ void UpdatePad()
 	pressed = WPAD_ButtonsHeld(0);
 }
 
-u32 DetectInput(void) { // Wii Remote (and Classic Controller) take precedence over GC to save time
-	if (WPAD_ScanPads() > WPAD_ERR_NONE) //Scan the Wii remotes.  If there any problems, skip checking buttons
+u32 DetectInput(u8 DownOrHeld) 
+{
+	u32 pressed = 0;
+	// Wii Remote (and Classic Controller) take precedence over GC to save time
+	if (WPAD_ScanPads() > WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
 	{
-		pressed = WPAD_ButtonsHeld(0); //Store pressed buttons
-
+		if (DownOrHeld == DI_BUTTONS_HELD) {
+			pressed = WPAD_ButtonsDown(0); //Store buttons down
+		} else {
+			pressed = WPAD_ButtonsHeld(0); //Store buttons held
+		}
+		
 		// Convert to wiimote values
 		if (pressed & WPAD_CLASSIC_BUTTON_ZR) pressed |= WPAD_BUTTON_PLUS;
 		if (pressed & WPAD_CLASSIC_BUTTON_ZL) pressed |= WPAD_BUTTON_MINUS;
@@ -62,7 +69,6 @@ u32 DetectInput(void) { // Wii Remote (and Classic Controller) take precedence o
 		if (pressed & WPAD_CLASSIC_BUTTON_DOWN) pressed |= WPAD_BUTTON_DOWN;
 		if (pressed & WPAD_CLASSIC_BUTTON_LEFT) pressed |= WPAD_BUTTON_LEFT;
 		if (pressed & WPAD_CLASSIC_BUTTON_RIGHT) pressed |= WPAD_BUTTON_RIGHT;
-		
 		#ifdef USBGECKO
 		Debug("		Button layout defined");
 		#endif
@@ -75,7 +81,12 @@ u32 DetectInput(void) { // Wii Remote (and Classic Controller) take precedence o
 	// No buttons on the Wii remote or Classic Controller were pressed
 	if (PAD_ScanPads() > PAD_ERR_NONE)
 	{
-		pressed = PAD_ButtonsHeld(0);
+		if (DownOrHeld == DI_BUTTONS_HELD) {
+			pressed = PAD_ButtonsDown(0); //Store buttons down
+		} else {
+			pressed = PAD_ButtonsHeld(0); //Store buttons held
+		}
+		
 		if (pressed) {
 			// Button on GC controller was pressed
 			if (pressed & PAD_TRIGGER_R) pressed |= WPAD_BUTTON_PLUS;

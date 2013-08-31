@@ -23,7 +23,7 @@
 //#include <GEMS_WifiWii.h>
 
 #include "grass_png.h"
-#include "block_png.h"
+#include "stone_png.h"
 
 //Classes:
 #include "debug.h"
@@ -132,7 +132,7 @@ int main(int argc, char **argv)
 	//END OF INIT'S
 	
 	Image grass((uint8_t *)grass_png);
-	Image block((uint8_t *)block_png);
+	Image block((uint8_t *)stone_png);
 	#ifdef USBGECKO
 	Debug("Image() Done");
 	Debug("All Inits is Done");
@@ -169,14 +169,14 @@ int main(int argc, char **argv)
 		printf("[*]Home: Quit Game\n");
 		while(running == true) {
 			UpdatePad();
-			if(WPAD_ButtonsDown(0) & WPAD_BUTTON_A){ //make sure that the function only run one time every press
+			if(DetectInput(DI_BUTTONS_DOWN) & WPAD_BUTTON_A){ //make sure that the function only run one time every press
 				choose = 1;
 				printf("\x1b[2;0H");
 				VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
 				SwapBuffer();
 				running = false;
 			}
-			else if(WPAD_ButtonsDown(0) & WPAD_BUTTON_B){ //make sure that the function only run one time every press
+			else if(DetectInput(DI_BUTTONS_DOWN) & WPAD_BUTTON_B){ //make sure that the function only run one time every press
 				choose = 0;
 				if(texture == 0){
 					texture = 1;
