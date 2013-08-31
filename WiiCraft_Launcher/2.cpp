@@ -24,8 +24,27 @@
 #include <sys/stat.h>
 #include <stdarg.h>
 #include <network.h>
+#include <gccore.h>
+#include <malloc.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <ogc/machine/processor.h>
+#include <wiiuse/wpad.h>
+
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "main.h"
+#include "video.h"
+#include "background_image.h"
+#include "filelist.h"
+#include "devicemounter.h"
+
+#define EXECUTE_ADDR	((u8 *) 0x92000000)
+#define BOOTER_ADDR		((u8 *) 0x93000000)
+#define ARGS_ADDR		((u8 *) 0x93200000)
 
 extern "C" {
 	extern void __exception_setreload(int t);
@@ -37,6 +56,12 @@ static GXRModeObj *rmode = NULL;
 
 int fatDevice = FAT_DEVICE_NONE;
 bool wc_updating = false;
+
+typedef void (*entrypoint) (void);
+extern void __exception_setreload(int t);
+extern void __exception_closeall();
+extern const u8 app_booter_bin[];
+extern const u32 app_booter_bin_size;
 
     //--------------------------------------------------
 	//Wiilight
@@ -69,8 +94,40 @@ void WIILIGHT_SetLevel(int level){
 	light_timeon.tv_nsec = level_on;
 	light_timeoff.tv_nsec = level_off;
 }
+static FILE *open_file(const char *dev, char *filepath)
+{
+	sprintf(filepath, "%s:/apps/wiicraft/boot.dol", dev);
+	FILE *exeFile = fopen(filepath ,"rb");
+
+	if (exeFile == NULL)
+	{
+		sprintf(filepath, "%s:/apps/WiiCraft/boot.dol", dev);
+		exeFile = fopen(filepath ,"rb");
+	}
+	if (exeFile == NULL)
+	{
+		sprintf(filepath, "%s:/apps/wiicraft/boot.elf", dev);
+		exeFile = fopen(filepath ,"rb");
+	}
+	if (exeFile == NULL)
+	{
+		sprintf(filepath, "%s:/apps/WiiCraft/boot.elf", dev);
+		exeFile = fopen(filepath ,"rb");
+	}
+
+	return exeFile;
+}
+
+void SystemMenu()
+{
+	*(vu32*)0x8132FFFB = 0x50756e65;
+	DCFlushRange((void *)(0x8132FFFB), 4);
+	ICInvalidateRange((void *)(0x8132FFFB), 4);
+	SYS_ResetSystem(SYS_RETURNTOMENU, 0, 0);
+}
 
 void clearScreen();
+void boot();
 //void cleanup();
 //void update_check();
 //s32 create_and_request_file(char* path1, char* appname, char *filename);
@@ -84,14 +141,74 @@ int main(int argc, char **argv)
 	WIILIGHT_SetLevel(255);
 	WIILIGHT_TurnOn();
 	
+	u32 cookie;
+	FILE *exeFile = NULL;
+	void *exeBuffer = (void *)EXECUTE_ADDR;
+	u32 exeSize = 0;
+	entrypoint exeEntryPoint;
+	__exception_setreload(0);
+	
 	fatMountSimple("sd", &__io_wiisd);
 	
-	//dosent work yet have no idea why 0_o
-	//mkdir("sd:/wiicraft", S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	/* get imagedata */
+	u8 *imgdata = GetImageData();
+	fadein(imgdata);
+
+	char filepath[200];
 	
-	
-	//Only Supports SD at the moment
-	fatDevice = FAT_DEVICE_SD;
+	SDCard_Init();
+	exeFile = open_file(DeviceName[SD], filepath);
+	// if app not found on SD Card try USB
+	if (exeFile == NULL)
+	{
+		USBDevice_Init();
+		fatDevice = FAT_DEVICE_USB;
+		int dev;
+		for(dev = USB1; dev < MAXDEVICES; ++dev)
+		{
+			if(!exeFile)
+				exeFile = open_file(DeviceName[dev], filepath);
+		}
+	}
+	else{
+		fatDevice = FAT_DEVICE_SD;
+	}
+	if (exeFile == NULL)
+	{
+		fadeout(imgdata);
+		fclose(exeFile);
+		SDCard_deInit();
+		USBDevice_deInit();
+		StopGX();
+		free(imgdata);
+		SystemMenu();
+	}
+	fseek(exeFile, 0, SEEK_END);
+	exeSize = ftell(exeFile);
+	rewind(exeFile);
+
+	if(fread(exeBuffer, 1, exeSize, exeFile) != exeSize)
+	{
+		fadeout(imgdata);
+		fclose(exeFile);
+		SDCard_deInit();
+		USBDevice_deInit();
+		StopGX();
+		free(imgdata);
+		SystemMenu();
+	}
+	fclose(exeFile);
+
+	memcpy(BOOTER_ADDR, app_booter_bin, app_booter_bin_size);
+	DCFlushRange(BOOTER_ADDR, app_booter_bin_size);
+
+	fadeout(imgdata);
+	SDCard_deInit();
+	USBDevice_deInit();
+	StopGX();
+	free(imgdata);
+
+	exeEntryPoint = (entrypoint)BOOTER_ADDR;
 
 	bool menuBool = true;
 
@@ -106,6 +223,9 @@ int main(int argc, char **argv)
 	VIDEO_Flush();
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
+	
+	
+	
 	WIILIGHT_TurnOff();
 	printf("\x1b[2;0H");
 	
@@ -122,12 +242,22 @@ int main(int argc, char **argv)
 		pressed = WPAD_ButtonsDown(0);
 		
 		if (pressed & WPAD_BUTTON_A){
-			wc_updating = true;
-			menuBool = false;
+			//wc_updating = true;
+			//menuBool = false;
+			SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+			_CPU_ISR_Disable(cookie);
+			__exception_closeall();
+			exeEntryPoint();
+			_CPU_ISR_Restore(cookie);
 		}
 		else if (pressed & WPAD_BUTTON_MINUS){
-			wc_updating = false;
-			menuBool = false;
+			//wc_updating = false;
+			//menuBool = false;
+			SYS_ResetSystem(SYS_SHUTDOWN, 0, 0);
+			_CPU_ISR_Disable(cookie);
+			__exception_closeall();
+			exeEntryPoint();
+			_CPU_ISR_Restore(cookie);
 		}
 		else if (pressed & WPAD_BUTTON_HOME){
 			printf("Exiting...\n");
@@ -145,6 +275,8 @@ int main(int argc, char **argv)
 void clearScreen(){
 	VIDEO_ClearFrameBuffer (rmode, xfb, COLOR_BLACK);
 	printf("\x1b[2;0H");
+}
+void boot(){
 }
 
 //void cleanup(){

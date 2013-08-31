@@ -17,7 +17,7 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source
+SOURCES		:=	source source/core
 DATA		:=	data  
 INCLUDES	:=  include
 
@@ -35,7 +35,7 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 LIBS	:= -lfat -lpngu -lpng -lwiiuse -lbte -logc -lm -lz
 LIBS	+= -ljpeg -lasnd -lmad -fpermissive -lbte -logc -lm
-LIBS	+= -lfat -lwiiuse -lbte -lwiikeyboard -logc
+LIBS	+= -lfat -lwiiuse -lbte -lwiikeyboard -logc -lfreetype
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -126,6 +126,18 @@ $(OUTPUT).elf: $(OFILES)
 #---------------------------------------------------------------------------------
 %.jpg.o	:	%.jpg
 %.png.o :   %.png
+#---------------------------------------------------------------------------------
+	@echo $(notdir $<)
+	$(bin2o)
+
+-include $(DEPENDS)
+
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------
+# This rule links in binary data with the .ttf extension
+#---------------------------------------------------------------------------------
+%.ttf.o	:	%.ttf
 #---------------------------------------------------------------------------------
 	@echo $(notdir $<)
 	$(bin2o)
