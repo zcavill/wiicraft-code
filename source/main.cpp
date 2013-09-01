@@ -39,6 +39,7 @@
 #include "debug.h"
 #include "main.h"
 #include "utils.h"
+#include "devicemounter.h"
 
 //Font:
 #include <ft2build.h>
@@ -111,11 +112,8 @@ int main(int argc, char **argv)
 	
 	//MAP mainMAP;
 	
-	//Check if the user uses a SD or a USB
-	char test;
-	sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
-	if(test == 115){ fatDevice = FAT_DEVICE_SD; } //first character = s
-	else if(test == 117){ fatDevice = FAT_DEVICE_USB; } //first character = u
+	fatDevice = FAT_DEVICE_SD;
+	
 	//#ifdef USBGECKO
 	//Debug("The User Has a %s", fatDevice); for some reason it does not work.
 	//#endif
