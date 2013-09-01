@@ -14,6 +14,9 @@ void Initialize(void){
 	fatInitDefault();	
 	#ifdef USBGECKO
 	DebugStart(true, "sd://wiicraft.log");
+	Debug("\n");
+	Debug("\n");
+	Debug("\n");
 	Debug("-------------------[Wiicraft Debug]----------------------");
 	#endif
 	InitVideo();
@@ -61,9 +64,6 @@ void Deinitialize(void){
 	#endif
 
 	#ifdef USBGECKO
-	Debug("\n");
-	Debug("\n");
-	Debug("\n");
 	DebugStop();
 	gprintf("DebugStop passed\n");
 	#endif
