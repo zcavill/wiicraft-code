@@ -76,8 +76,10 @@ u32 DetectInput(u8 DownOrHeld)
 	}
 
 	// Return Classic Controller and Wii Remote values
-	if (pressed) return pressed;
-	
+	if (pressed) {
+		VIDEO_WaitVSync();
+		return pressed;
+	}
 	// No buttons on the Wii remote or Classic Controller were pressed
 	if (PAD_ScanPads() > PAD_ERR_NONE)
 	{
@@ -102,6 +104,7 @@ u32 DetectInput(u8 DownOrHeld)
 			if (pressed & PAD_BUTTON_RIGHT) pressed |= WPAD_BUTTON_RIGHT;
 		}
 	}
+	VIDEO_WaitVSync();
 	return pressed;
 }
 
