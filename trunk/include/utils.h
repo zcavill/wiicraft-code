@@ -24,6 +24,7 @@
 
 
 #define getTime() (ticks_to_millisecs(gettime()))
+#define MENU(x,y) (printf("%s%s\n", ((selected == (y)) ? "\x10" : " "), (x)))
 #define DEFAULT_FIFO_SIZE	(256*1024)
 
 // Values for DetectInput
