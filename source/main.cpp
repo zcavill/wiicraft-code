@@ -45,6 +45,17 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include "rursus_compact_mono_ttf.h"
+//Color:
+#define	BLACK	"\x1b[30;1m"
+#define	RED	"\x1b[31;1m"
+#define	GREEN	"\x1b[32;1m"
+#define	YELLOW	"\x1b[33;1m"
+#define BLUE    "\x1b[34;1m"
+#define MAGENTA "\x1b[35;1m"
+#define CYAN    "\x1b[36;1m"
+#define	WHITE	"\x1b[37;1m"
+#define CHANGE_COLOR(X)	(printf((X)))
+
 extern "C" {
         extern void __exception_setreload(int t);
 }
@@ -128,11 +139,8 @@ int main(int argc, char **argv)
         //Debug("initAPI() Done");
         //#endif
         bool debugText = false;
-        bool running = true;
         int texture = 1;
         bool mainGame = true;
-        
-        //END OF INIT'S
         
         Image grass((uint8_t *)grass_png);
         Image dirt((uint8_t *)dirt_png);
@@ -146,78 +154,79 @@ int main(int argc, char **argv)
         #ifdef USBGECKO
         Debug("All Inits is Done");
         #endif
-        
-        bool menuRun = true;
-        int choose = 0;
-        bool Runned = false;
-        
-        mainMenu:while(menuRun){
-                if(Runned){
-                        printf("\x1b[2;0H");
-                        VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-                        SwapBuffer();
-                }
-                Runned = true;
-                printf("WiiCraft %s\n", "6.3");
-                printf("========[Menu]========\n");
-                printf("[*]A: Start Game\n");
-                switch(texture){
-                        case 0:
-                        
-                        case 1:
-                                printf("[*]B: Set Block Texture To: %s (Currently: %s)             \n", "Grass", "Stone");
-                                break;
-                        case 2:
-                                printf("[*]B: Set Block Texture To: %s (Currently: %s)             \n", "Dirt", "Grass");
-                                break;
-                        case 3:
-                                printf("[*]B: Set Block Texture To: %s (Currently: %s)              \n", "Stone", "Dirt");
-                                break;
-                }
-                
-                printf("[*]Home: Quit Game\n");
-                while(running == true) {
-                        UpdatePad();
-                        if(WPAD_ButtonsDown(0) & WPAD_BUTTON_A){ //make sure that the function only run one time every press
-                                choose = 1;
-                                printf("\x1b[2;0H");
-                                VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-                                //SwapBuffer();
-                                running = false;
-                        }
-                        else if(WPAD_ButtonsDown(0) & WPAD_BUTTON_B){ //make sure that the function only run one time every press
-                                choose = 0;
-                                if(texture == 3){
-                                        texture = 1;
-                                }
-                                else{
-                                        ++texture;
-                                }
-                                printf("\x1b[2;0H");
-                                VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-                                //SwapBuffer();
-                                goto mainMenu;
-                        }
-                        else if(pressed & WPAD_BUTTON_HOME){
-                                choose = 3;
-                                printf("\x1b[2;0H");
-                                VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-                                //SwapBuffer();
-                                printf("Stoping WiiCraft...");
-                                running = false;
-                        }
-                        VIDEO_WaitVSync();
-                        
-                }
-                if(choose == 1 || choose == 3){
-                        break;
-                }
-        }
-
+		
+		//Menu
+		s8 selected = 1; // Make sure that "selected" is defined as 1-6
+	mainMenu:selected = 1;
+	while(true) {
+		VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+		printf("\x1b[2;0H"); // This resets the position of the console
+		CHANGE_COLOR(GREEN);
+		printf("WiiCraft %s\n", "6.3");
+		CHANGE_COLOR(WHITE);
+        printf("========[Menu]========\n");
+		MENU("Singelplayer                 ", 1); // MENU(description, option number)
+		MENU("Swap Texture's               ", 2);
+		MENU("Exit", 3);
+		do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
+		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
+			selected++;
+			if (selected>3) selected = 1;
+		} else {
+			if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
+				selected--;
+				if (selected<1) selected = 3;
+			} else {
+				if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
+					if(selected == 1){
+						goto mainGame;
+					}
+					else if(selected == 2){	
+						selected = 1;
+						while(true) {
+						printf("\x1b[2;0H"); // This resets the position of the console
+						CHANGE_COLOR(GREEN);
+						printf("WiiCraft %s\n", "6.3");
+						CHANGE_COLOR(WHITE);
+						printf("========[Menu]========\n");
+						MENU("Set Texture To Stone", 1); // MENU(description, option number)
+						MENU("Set Texture To Grass", 2);
+						MENU("Back", 3);
+						do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
+						if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
+							selected++;
+							if (selected>3) selected = 1;
+							} else {
+								if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
+									selected--;
+									if (selected<1) selected = 3;
+								} else {
+									if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
+										if(selected == 1){
+											texture = 1;
+										}
+										else if(selected == 2){
+											texture = 2;
+										}
+										else if(selected == 3){
+											goto mainMenu;
+										}
+									}
+								}
+							}
+						}
+						
+					}
+					else if(selected == 3){
+						goto EXIT;
+					}
+				}
+			}
+		}
+	}
         
   /*----------------------------------------<Main Game Loop>-----------------------------------------*/
-  if(choose == 1){
-        while(mainGame == true && choose == 1){
+        mainGame:while(mainGame == true){
                 UpdatePad();
                 printf("\x1b[%d;%dH", 2, 0);
                 printf("Press + For Pause Menu");
@@ -268,13 +277,10 @@ int main(int argc, char **argv)
                                 else if(pressed & WPAD_BUTTON_HOME){*/
                                         printf("\x1b[2;0H");
                                         VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
-                                        SwapBuffer();
                                         //--------
                                         #ifdef USBGECKO
                                         Debug("--<Main Loop Exited>--");
                                         #endif
-                                        choose = 0;
-                                        running = true;
                                         goto mainMenu;
                                 /*}
                         }
@@ -283,14 +289,13 @@ int main(int argc, char **argv)
                 if ((pressed & WPAD_BUTTON_UP) && (pressed & WPAD_BUTTON_A) && (pressed & WPAD_BUTTON_B)) debugText = !debugText;
                 VIDEO_WaitVSync();
         }
-}
-else if(choose == 3){
-        printf("\x1b[2;0H");
+
+        EXIT:printf("\x1b[2;0H");
         VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
         SwapBuffer();
         Deinitialize();
         exit(0);
-}
+		
         #ifdef USBGECKO
         Debug("ERROR: PASSED LAST LINE OF CODE!");
         #endif
