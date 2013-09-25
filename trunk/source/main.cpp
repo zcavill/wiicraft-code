@@ -169,61 +169,64 @@ int main(int argc, char **argv)
 		MENU("Swap Texture's               ", 2);
 		MENU("Exit", 3);
 		do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
-		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
+		if (pressed & WPAD_BUTTON_DOWN) {
 			selected++;
 			if (selected>3) selected = 1;
-		} else {
-			if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
-				selected--;
-				if (selected<1) selected = 3;
-			} else {
-				if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
-					if(selected == 1){
-						goto mainGame;
+			continue;
+		}
+		if (pressed & WPAD_BUTTON_UP) {
+			selected--;
+			if (selected<1) selected = 3;
+			continue;
+		}
+		if (pressed & WPAD_BUTTON_A) {
+			if(selected == 1){
+				goto mainGame;
+			}
+			if(selected == 2){	
+				selected = 1;
+				while(true) {
+					printf("\x1b[2;0H"); // This resets the position of the console
+					CHANGE_COLOR(GREEN);
+					printf("WiiCraft %s\n", "6.3");
+					CHANGE_COLOR(WHITE);
+					printf("========[Menu]========\n");
+					MENU("Set Texture To Stone", 1); // MENU(description, option number)
+					MENU("Set Texture To Grass", 2);
+					MENU("Back", 3);
+					do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
+					if (pressed & WPAD_BUTTON_DOWN) {
+						selected++;
+						if (selected>3) selected = 1;
+						continue;
 					}
-					else if(selected == 2){	
-						selected = 1;
-						while(true) {
-						printf("\x1b[2;0H"); // This resets the position of the console
-						CHANGE_COLOR(GREEN);
-						printf("WiiCraft %s\n", "6.3");
-						CHANGE_COLOR(WHITE);
-						printf("========[Menu]========\n");
-						MENU("Set Texture To Stone", 1); // MENU(description, option number)
-						MENU("Set Texture To Grass", 2);
-						MENU("Back", 3);
-						do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
-						if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
-							selected++;
-							if (selected>3) selected = 1;
-							} else {
-								if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
-									selected--;
-									if (selected<1) selected = 3;
-								} else {
-									if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
-										if(selected == 1){
-											texture = 1;
-										}
-										else if(selected == 2){
-											texture = 2;
-										}
-										else if(selected == 3){
-											goto mainMenu;
-										}
-									}
-								}
-							}
+					if (pressed & WPAD_BUTTON_UP) {
+						selected--;
+						if (selected<1) selected = 3;
+						continue;
+					}
+					if (pressed & WPAD_BUTTON_A) {
+						if(selected == 1) {
+							texture = 1;
+							continue;
 						}
-						
-					}
-					else if(selected == 3){
-						goto EXIT;
+						if(selected == 2) {
+							texture = 2;
+							continue;
+						}
+						if(selected == 3) {
+							goto mainMenu;
+						}
 					}
 				}
 			}
+			if(selected == 3){
+				goto EXIT;
+			}
 		}
 	}
+		
+	
         
   /*----------------------------------------<Main Game Loop>-----------------------------------------*/
         mainGame:while(mainGame == true){
