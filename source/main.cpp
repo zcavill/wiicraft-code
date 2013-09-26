@@ -170,17 +170,17 @@ int main(int argc, char **argv)
 		MENU("Swap Texture's               ", 2);
 		MENU("Exit", 3);
 		do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
-		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
+		if (pressed & WPAD_BUTTON_DOWN) {
 			selected++;
 			if (selected>3) selected = 1;
 			continue;
 		}
-		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
+		if (pressed & WPAD_BUTTON_UP) {
 			selected--;
 			if (selected<1) selected = 3;
 			continue;
 		}
-		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
+		if (pressed & WPAD_BUTTON_A) {
 			if(selected == 1){
 				goto mainGame;
 			}
@@ -196,17 +196,17 @@ int main(int argc, char **argv)
 					MENU("Set Texture To Grass", 2);
 					MENU("Back", 3);
 					do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
-					if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
+					if (pressed & WPAD_BUTTON_DOWN) {
 						selected++;
 						if (selected>3) selected = 1;
 						continue;
 					}
-					if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
+					if (pressed & WPAD_BUTTON_UP) {
 						selected--;
 						if (selected<1) selected = 3;
 						continue;
 					}
-					if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
+					if (pressed & WPAD_BUTTON_A) {
 						if(selected == 1) {
 							texture = 1;
 							continue;

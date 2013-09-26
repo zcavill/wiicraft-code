@@ -46,7 +46,7 @@ u32 DetectInput(u8 DownOrHeld)
 	// Wii Remote (and Classic Controller) take precedence over GC to save time
 	if (WPAD_ScanPads() > WPAD_ERR_NONE) // Scan the Wii remotes.  If there any problems, skip checking buttons
 	{
-		if (DownOrHeld == DI_BUTTONS_HELD) {
+		if (DownOrHeld == DI_BUTTONS_DOWN) {
 			pressed = WPAD_ButtonsDown(0); //Store buttons down
 		} else {
 			pressed = WPAD_ButtonsHeld(0); //Store buttons held
