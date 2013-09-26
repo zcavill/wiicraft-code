@@ -157,9 +157,10 @@ int main(int argc, char **argv)
 		
 		//Menu
 		s8 selected = 1; // Make sure that "selected" is defined as 1-6
+		goto mainMenu;
 	mainMenu:selected = 1;
 	while(true) {
-		VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+		//VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
 		printf("\x1b[2;0H"); // This resets the position of the console
 		CHANGE_COLOR(GREEN);
 		printf("WiiCraft %s\n", "6.3");
@@ -169,17 +170,17 @@ int main(int argc, char **argv)
 		MENU("Swap Texture's               ", 2);
 		MENU("Exit", 3);
 		do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
-		if (pressed & WPAD_BUTTON_DOWN) {
+		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
 			selected++;
 			if (selected>3) selected = 1;
 			continue;
 		}
-		if (pressed & WPAD_BUTTON_UP) {
+		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
 			selected--;
 			if (selected<1) selected = 3;
 			continue;
 		}
-		if (pressed & WPAD_BUTTON_A) {
+		if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
 			if(selected == 1){
 				goto mainGame;
 			}
@@ -195,17 +196,17 @@ int main(int argc, char **argv)
 					MENU("Set Texture To Grass", 2);
 					MENU("Back", 3);
 					do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
-					if (pressed & WPAD_BUTTON_DOWN) {
+					if (WPAD_ButtonsDown(0) & WPAD_BUTTON_DOWN) {
 						selected++;
 						if (selected>3) selected = 1;
 						continue;
 					}
-					if (pressed & WPAD_BUTTON_UP) {
+					if (WPAD_ButtonsDown(0) & WPAD_BUTTON_UP) {
 						selected--;
 						if (selected<1) selected = 3;
 						continue;
 					}
-					if (pressed & WPAD_BUTTON_A) {
+					if (WPAD_ButtonsDown(0) & WPAD_BUTTON_A) {
 						if(selected == 1) {
 							texture = 1;
 							continue;
