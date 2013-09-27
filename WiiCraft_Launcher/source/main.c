@@ -104,7 +104,7 @@ int main(int argc, char *argv[]){
 	InitVideo();
 	/* get imagedata */
 	u8 *imgdata = GetImageData();
-	fadein(imgdata);
+	fadein(imgdata); //Fade in Image, All Menus NEED to be before this!!!
 
 	char filepath[200];
 
@@ -164,9 +164,10 @@ int main(int argc, char *argv[]){
 	free(imgdata);
 
 	exeEntryPoint = (entrypoint)BOOTER_ADDR;
+	
 	WIILIGHT_TurnOff();
 	
-	bool menuBool = true;
+	//bool menuBool = true;
 	
 	/*printf("\x1b[2;0H");
 	

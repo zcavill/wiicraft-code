@@ -9,11 +9,9 @@
 
 // Copyright (C) 2012-2013	filfat, xerpi, JoostinOnline
 
-/*
 
-	(c)Mojang AB And Filiph Sandström
-
-									*/
+//WARNING! This Part Of WiiCraft Is Currently Disconected As It Is Not Needed At This Point Of Time!
+//However It Is Still Worth Keeping For Later Use! (The Code Is Verybad Writen Too (This Was In My Early Days)!)
 
 #include <iostream>
 #include <fstream>

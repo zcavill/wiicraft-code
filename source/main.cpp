@@ -157,6 +157,7 @@ int main(int argc, char **argv)
 		
 		//Menu
 		s8 selected = 1; // Make sure that "selected" is defined as 1-6
+		WIILIGHT_TurnOff();
 		goto mainMenu;
 	mainMenu:selected = 1;
 	while(true) {
