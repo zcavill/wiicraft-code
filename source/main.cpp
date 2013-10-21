@@ -42,6 +42,7 @@
 #include "main.h"
 #include "utils.h"
 #include "devicemounter.h"
+#include "common.h"
 
 //Font:
 #include <ft2build.h>
@@ -66,7 +67,6 @@ extern "C" {
 const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
 const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
 const unsigned int PORT = 8593; //PORT
-static lwp_t httd_handle = (lwp_t)NULL;
 
 int fatDevice = FAT_DEVICE_NONE;
 
@@ -114,12 +114,14 @@ void WIILIGHT_SetLevel(int level){
 World world;
 void UpdateCamera();
 void MoveCamera();
-void *httpd (void *arg);
+void clear();
+void Update(bool force);
 
 int main(int argc, char **argv)
 {       
         // In the event of a code dump, the app will exit after 10 seconds (unless you press POWER)
         __exception_setreload(10);
+		initialise_reset_button();
 		//GRRLIB_Init(); Does Not Work Yet
         Initialize();
         fatMountSimple("sd", &__io_wiisd);
@@ -175,12 +177,12 @@ int main(int argc, char **argv)
 		//VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
 		printf("\x1b[2;0H"); // This resets the position of the console
 		CHANGE_COLOR(GREEN);
-		printf("WiiCraft %s\n", "6.3");
+		printf("WiiCraft %s\n", "0.7.0 Indev");
 		CHANGE_COLOR(WHITE);
         printf("========[Menu]========\n");
 		MENU("Singelplayer                 ", 1); // MENU(description, option number)
 		MENU("Swap Texture's               ", 2);
-		MENU("DS Networking                ", 3);
+		MENU("Update                       ", 3);
 		MENU("Exit", 4);
 		do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
 		if (pressed & WPAD_BUTTON_DOWN) {
@@ -202,7 +204,7 @@ int main(int argc, char **argv)
 				while(true) {
 					printf("\x1b[2;0H"); // This resets the position of the console
 					CHANGE_COLOR(GREEN);
-					printf("WiiCraft %s\n", "6.3");
+					printf("WiiCraft %s\n", "0.7.0 Indev");
 					CHANGE_COLOR(WHITE);
 					printf("========[Menu]========\n");
 					MENU("Set Texture To Stone                 ", 1); // MENU(description, option number)
@@ -240,13 +242,13 @@ int main(int argc, char **argv)
 			while(true){
 				printf("\x1b[2;0H"); // This resets the position of the console
 				CHANGE_COLOR(GREEN);
-				printf("WiiCraft %s\n", "6.3");
+				printf("WiiCraft %s\n", "0.7.0 Indev");
 				CHANGE_COLOR(WHITE);
 				printf("========[Menu]========\n");
 				printf("TESTING ONLY     \n");
-				MENU("Host                 ", 1); // MENU(description, option number)
-				MENU("Join                 ", 2);
-				MENU("Back                 ", 3);
+				MENU("Update                       ", 1); // MENU(description, option number)
+				MENU("Force Update                 ", 2);
+				MENU("Back                         ", 3);
 				do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
 				if (pressed & WPAD_BUTTON_DOWN) {
 					selected++;
@@ -260,34 +262,13 @@ int main(int argc, char **argv)
 				}
 				if (pressed & WPAD_BUTTON_A) {
 					if(selected == 1) {
-						//HOST
-						printf("\n\n\nInitialize Networking...\n");
-						ret = if_config ( localip, netmask, gateway, TRUE);
-						if (ret>=0) {
-							printf ("Network configured, ip: %s",localip);
-							LWP_CreateThread(	&httd_handle,	/* thread handle */ 
-												httpd,			/* code */ 
-												localip,		/* arg pointer for thread */
-												NULL,			/* stack base */ 
-												16*1024,		/* stack size */
-												50				/* thread priority */ );
-						} else {
-							printf ("Could Not Connect To Internet!\n");
-						}
-
-						s32 host = 0; host = TCP_Server(PORT, 5);
-						while(true){
-							s32 client = 0; client = TCP_GetClient(host);
-							if(!clientForServer == LOCAL_PLAYERS){
-								clientForServer++;
-								iprintf("Client connected(%d of %d)\n", clientForServer,LOCAL_PLAYERS);
-								iprintf("Client id: %d\n", client);
-							}
-						}
+						//Update
+						Update(false);
 						continue;
 					}
 					if(selected == 2) {
-						//JOIN
+						//Force Update
+						Update(true);
 						continue;
 					}
 					if(selected == 3) {
@@ -557,4 +538,142 @@ void *httpd (void *arg) {
 		}
 	}
 	return NULL;
+}
+
+void Update(bool force){
+	clear();
+	printf("Initializing Network...");
+	initialise_network();
+	printf("Attempting to connect to server...\n");
+	s32 main_server = server_connect();
+	printf("Connection established.\n\n");
+	
+	// Open file
+	FILE *f = fopen("sd:/temp.txt", "wb");
+	
+	// If file can't be created
+	if (f == NULL) {
+		fclose(f);
+		die("There was a problem creating/accessing the temp file.\n");
+	}
+	
+	printf("Checking version with remote server...\n");
+	
+	char http_request[1000];
+	strcpy(http_request,"GET /WiiCraft.txt");
+	strcat(http_request, " HTTP/1.0\r\nHost: filfat.com\r\n\r\n");
+	
+	write_http_reply(main_server, http_request); // Send the HTTP message
+	int result = request_file(main_server, f); // Store the servers reply in our file pointer
+
+	fclose(f);
+	net_close(main_server);
+	
+	if (result == true) {
+		printf("\n\nSuccessfully downloaded the version file.\n");
+	}
+	else {
+		die("\n\nDownload of remote version file failed.\n");
+	}
+	
+	printf("Comparing remote version with current version(%s)...\n", WIICRAFT_VERSION);
+	
+	// Reading and Compare the file
+	
+	string line;
+	ifstream WC_version("sd:/temp.txt");
+	if (WC_version.is_open())
+	{
+		while ( getline (WC_version,line) )
+		{
+			cout << line << endl;
+		}
+		WC_version.close();
+	}
+	else{
+		cout << "Unable to read file\n well this is embarrassing...\n";
+		sleep(400000);
+		//remove( "sd:/temp.txt" );
+		clear();
+		return;
+	} 
+	
+	printf("Current version installed: %s\n Remote version:%s\n", WIICRAFT_VERSION, line.c_str());
+	if(WIICRAFT_VERSION == line){
+		printf("Theres no need to update, you already have the current version.");
+		sleep(400000);
+	}
+	//remove( "sd:/temp.txt" );
+	clear();
+	return;
+}
+
+void clear(){
+//Fake "Clear" to lazy to look into that now :P
+	printf("\x1b[2;0H");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("                                                                        ");
+	printf("\x1b[2;0H");
 }
