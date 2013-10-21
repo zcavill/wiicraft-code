@@ -10,6 +10,7 @@
 // Copyright (C) 2012-2013      filfat, xerpi, JoostinOnline
 
 #include <gccore.h>
+#include <grrlib.h>
 #include <wiiuse/wpad.h>
 #include <wiikeyboard/keyboard.h>
 #include <stdio.h>
@@ -20,7 +21,8 @@
 #include <sdcard/wiisd_io.h>
 #include <png.h>
 #include <pngu.h>
-//#include <GEMS_WifiWii.h>
+#include <GEMS_WifiWii.h>
+#include <network.h>
 
 #include "grass_png.h"
 #include "dirt_png.h"
@@ -44,7 +46,7 @@
 //Font:
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "rursus_compact_mono_ttf.h"
+#include "font_ttf.h"
 //Color:
 #define	BLACK	"\x1b[30;1m"
 #define	RED	"\x1b[31;1m"
@@ -61,11 +63,19 @@ extern "C" {
 }
 
 
-//const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
-//const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
-//const unsigned int PORT = 8593; //PORT
+const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
+const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
+const unsigned int PORT = 8593; //PORT
+static lwp_t httd_handle = (lwp_t)NULL;
 
 int fatDevice = FAT_DEVICE_NONE;
+
+s32 ret;
+
+	char localip[16] = {0};
+	char gateway[16] = {0};
+	char netmask[16] = {0};
+	int clientForServer = 0;
 
         //--------------------------------------------------
         //Wiilight
@@ -104,12 +114,13 @@ void WIILIGHT_SetLevel(int level){
 World world;
 void UpdateCamera();
 void MoveCamera();
-int Menu(int texture);
+void *httpd (void *arg);
 
 int main(int argc, char **argv)
 {       
         // In the event of a code dump, the app will exit after 10 seconds (unless you press POWER)
         __exception_setreload(10);
+		//GRRLIB_Init(); Does Not Work Yet
         Initialize();
         fatMountSimple("sd", &__io_wiisd);
         #ifdef USBGECKO
@@ -169,16 +180,17 @@ int main(int argc, char **argv)
         printf("========[Menu]========\n");
 		MENU("Singelplayer                 ", 1); // MENU(description, option number)
 		MENU("Swap Texture's               ", 2);
-		MENU("Exit", 3);
+		MENU("DS Networking                ", 3);
+		MENU("Exit", 4);
 		do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
 		if (pressed & WPAD_BUTTON_DOWN) {
 			selected++;
-			if (selected>3) selected = 1;
+			if (selected>4) selected = 1;
 			continue;
 		}
 		if (pressed & WPAD_BUTTON_UP) {
 			selected--;
-			if (selected<1) selected = 3;
+			if (selected<1) selected = 4;
 			continue;
 		}
 		if (pressed & WPAD_BUTTON_A) {
@@ -193,9 +205,10 @@ int main(int argc, char **argv)
 					printf("WiiCraft %s\n", "6.3");
 					CHANGE_COLOR(WHITE);
 					printf("========[Menu]========\n");
-					MENU("Set Texture To Stone", 1); // MENU(description, option number)
-					MENU("Set Texture To Grass", 2);
-					MENU("Back", 3);
+					MENU("Set Texture To Stone                 ", 1); // MENU(description, option number)
+					MENU("Set Texture To Grass                 ", 2);
+					MENU("Back                                 ", 3);
+					printf("                 ");
 					do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
 					if (pressed & WPAD_BUTTON_DOWN) {
 						selected++;
@@ -223,6 +236,68 @@ int main(int argc, char **argv)
 				}
 			}
 			if(selected == 3){
+			//TODO
+			while(true){
+				printf("\x1b[2;0H"); // This resets the position of the console
+				CHANGE_COLOR(GREEN);
+				printf("WiiCraft %s\n", "6.3");
+				CHANGE_COLOR(WHITE);
+				printf("========[Menu]========\n");
+				printf("TESTING ONLY     \n");
+				MENU("Host                 ", 1); // MENU(description, option number)
+				MENU("Join                 ", 2);
+				MENU("Back                 ", 3);
+				do {pressed = DetectInput(DI_BUTTONS_DOWN);} while(!pressed);
+				if (pressed & WPAD_BUTTON_DOWN) {
+					selected++;
+					if (selected>3) selected = 1;
+					continue;
+				}
+				if (pressed & WPAD_BUTTON_UP) {
+					selected--;
+					if (selected<1) selected = 3;
+					continue;
+				}
+				if (pressed & WPAD_BUTTON_A) {
+					if(selected == 1) {
+						//HOST
+						printf("\n\n\nInitialize Networking...\n");
+						ret = if_config ( localip, netmask, gateway, TRUE);
+						if (ret>=0) {
+							printf ("Network configured, ip: %s",localip);
+							LWP_CreateThread(	&httd_handle,	/* thread handle */ 
+												httpd,			/* code */ 
+												localip,		/* arg pointer for thread */
+												NULL,			/* stack base */ 
+												16*1024,		/* stack size */
+												50				/* thread priority */ );
+						} else {
+							printf ("Could Not Connect To Internet!\n");
+						}
+
+						s32 host = 0; host = TCP_Server(PORT, 5);
+						while(true){
+							s32 client = 0; client = TCP_GetClient(host);
+							if(!clientForServer == LOCAL_PLAYERS){
+								clientForServer++;
+								iprintf("Client connected(%d of %d)\n", clientForServer,LOCAL_PLAYERS);
+								iprintf("Client id: %d\n", client);
+							}
+						}
+						continue;
+					}
+					if(selected == 2) {
+						//JOIN
+						continue;
+					}
+					if(selected == 3) {
+						goto mainMenu;
+					}
+				}
+			}
+			
+			}
+			if(selected == 4){
 				goto EXIT;
 			}
 		}
@@ -402,7 +477,84 @@ void UpdateCamera()
         guMtxConcat(world.getCameraView(), model, modelview);
         GX_LoadPosMtxImm(modelview, GX_PNMTX0);
 }
+const static char http_200[] = "HTTP/1.1 200 OK\r\n";
 
+const static char indexdata[] = "<html> \
+                               <head><title>A test page</title></head> \
+                               <body> \
+                               This small test page has had %d hits. \
+                               </body> \
+                               </html>";
 
-int Menu(int texture){return false;
+const static char http_html_hdr[] = "Content-type: text/html\r\n\r\n";
+const static char http_get_index[] = "GET / HTTP/1.1\r\n";
+//---------------------------------------------------------------------------------
+void *httpd (void *arg) {
+//---------------------------------------------------------------------------------
+
+	s32 sock, csock;
+	int ret;
+	u32	clientlen;
+	struct sockaddr_in client;
+	struct sockaddr_in server;
+	char temp[1026];
+	static int hits=0;
+	
+	clientlen = sizeof(client);
+
+	sock = net_socket (AF_INET, SOCK_STREAM, IPPROTO_IP);
+
+	if (sock == INVALID_SOCKET) {
+      printf ("Cannot create a socket!\n");
+    } else {
+
+		memset (&server, 0, sizeof (server));
+		memset (&client, 0, sizeof (client));
+
+		server.sin_family = AF_INET;
+		server.sin_port = htons (80);
+		server.sin_addr.s_addr = INADDR_ANY;
+		ret = net_bind (sock, (struct sockaddr *) &server, sizeof (server));
+		
+		if ( ret ) {
+
+			printf("Error %d binding socket!\n", ret);
+
+		} else {
+
+			if ( (ret = net_listen( sock, 5)) ) {
+
+				printf("Error %d listening!\n", ret);
+
+			} else {
+			
+				while(1) {
+	
+					csock = net_accept (sock, (struct sockaddr *) &client, &clientlen);
+				
+					if ( csock < 0 ) {
+						printf("Error connecting socket %d!\n", csock);
+						while(1);
+					}
+
+					printf("Connecting port %d from %s\n", client.sin_port, inet_ntoa(client.sin_addr));
+					memset (temp, 0, 1026);
+					ret = net_recv (csock, temp, 1024, 0);
+					printf("Received %d bytes\n", ret);
+
+					if ( !strncmp( temp, http_get_index, strlen(http_get_index) ) ) {
+						hits++;
+						net_send(csock, http_200, strlen(http_200), 0);
+						net_send(csock, http_html_hdr, strlen(http_html_hdr), 0);
+						sprintf(temp, indexdata, hits);
+						net_send(csock, temp, strlen(temp), 0);
+					}
+
+					net_close (csock);
+
+				}
+			}
+		}
+	}
+	return NULL;
 }

@@ -31,14 +31,14 @@ void Initialize(void){
 	#ifdef USBGECKO
 	Debug("InitFPS() Done");
 	#endif
-	ASND_Init();
-	#ifdef USBGECKO
-	Debug("ASND_Init() Done");
-	#endif
-	MP3Player_Init();
-	#ifdef USBGECKO
-	Debug("MP3Player_Init Done");
-	#endif
+//	ASND_Init();
+//	#ifdef USBGECKO
+//	Debug("ASND_Init() Done");
+//	#endif
+//	MP3Player_Init();
+//	#ifdef USBGECKO
+//	Debug("MP3Player_Init Done");
+//	#endif
 
 }
 
@@ -53,15 +53,15 @@ void Deinitialize(void){
 	Debug("EndVideo Passed");
 	#endif
 	
-	ASND_End();
-	#ifdef USBGECKO
-	Debug("ASND_End Passed");
-	#endif
+//	ASND_End();
+//	#ifdef USBGECKO
+//	Debug("ASND_End Passed");
+//	#endif
 
-	MP3Player_Stop();
-	#ifdef USBGECKO
-	Debug("MP3Player_Stop Passed");
-	#endif
+//	MP3Player_Stop();
+//	#ifdef USBGECKO
+//	Debug("MP3Player_Stop Passed");
+//	#endif
 
 	#ifdef USBGECKO
 	DebugStop();

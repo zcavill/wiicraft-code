@@ -33,9 +33,10 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:= -lgrrlib -lfat -lpngu -lpng -lwiiuse -lbte -logc -lm -lz
+LIBS	:= -lfat -lpngu -lpng -lwiiuse -lbte -logc -lm -lz
 LIBS	+= -ljpeg -lasnd -lmad -fpermissive -lbte -logc -lm
-LIBS	+= -lfat -lwiiuse -lbte -lwiikeyboard -logc -lfreetype
+LIBS	:= -lgrrlib -lfat -lpngu -lpng -lwiiuse -lbte -logc -lm -lz
+LIBS	+= -lfat -lwiiuse -lbte -lwiikeyboard -logc -lfreetype -lGEMS_wifiWii
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
