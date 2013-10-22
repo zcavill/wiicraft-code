@@ -685,72 +685,7 @@ void downloadUpdate(){
 	return;
 }
 
-void clear(){
-//Fake "Clear" to lazy to look into that now :P
-	printf("\x1b[2;0H");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("                                                                        ");
-	printf("\x1b[2;0H");
+inline void clear(){
+	printf("\x1b[2J");   // Clear
+	printf("\x1b[2;0H"); // Reset cursor position
 }
