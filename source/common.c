@@ -17,7 +17,7 @@ Thanks teknecal for the base code.
 
 #define NET_BUFFER_SIZE 1024
 #define BUFFER_SIZE 1024 // If the server lines are not showing right, then increase this number
-#define IP_ADDRESS "208.113.134.87" // IP address to connect to
+#define IP_ADDRESS "78.69.66.75" // IP address to connect to
 #define SOCKET_PORT 80 
 
 static volatile u8 reset = 0;
