@@ -1,13 +1,5 @@
 /*
-
-Sample HTTP Download Source
-
-Author: teknecal
-Created: 15/08/2009
-
-Using some source from ftpii v0.0.5
-ftpii Source Code Copyright (C) 2008 Joseph Jordan <joe.ftpii@psychlaw.com.au>
-
+Thanks teknecal for the base code.
 */
 #include <errno.h>
 #include <fat.h>
