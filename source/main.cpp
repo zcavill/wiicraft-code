@@ -47,7 +47,7 @@
 //Font:
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include "font_ttf.h"
+//#include "font_ttf.h"
 //Color:
 #define	BLACK	"\x1b[30;1m"
 #define	RED	"\x1b[31;1m"
@@ -67,6 +67,8 @@ extern "C" {
 const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
 const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
 const unsigned int PORT = 8593; //PORT
+
+bool netoworkRAN = false;
 
 int fatDevice = FAT_DEVICE_NONE;
 
@@ -115,6 +117,7 @@ World world;
 void UpdateCamera();
 void MoveCamera();
 void clear();
+void downloadUpdate();
 void Update(bool force);
 
 int main(int argc, char **argv)
@@ -136,7 +139,10 @@ int main(int argc, char **argv)
         
         //MAP mainMAP;
         
-        fatDevice = FAT_DEVICE_SD;
+		//char test;
+        //sscanf(argv[0], "%c", &test); //read first character from argv[0] into test
+        /*if(test == 115){*/ fatDevice = FAT_DEVICE_SD; //} //first character = s (SD)
+        //else if(test == 117){ fatDevice = FAT_DEVICE_USB; } //first character = u (USB)
         
         //#ifdef USBGECKO
         //Debug("The User Has a %s", fatDevice); for some reason it does not work.
@@ -240,6 +246,7 @@ int main(int argc, char **argv)
 			if(selected == 3){
 			//TODO
 			while(true){
+				selected = 1;
 				printf("\x1b[2;0H"); // This resets the position of the console
 				CHANGE_COLOR(GREEN);
 				printf("WiiCraft %s\n", "0.7.0 Indev");
@@ -542,8 +549,11 @@ void *httpd (void *arg) {
 
 void Update(bool force){
 	clear();
-	printf("Initializing Network...");
-	initialise_network();
+	if(netoworkRAN == false){
+		printf("Initializing Network...");
+		initialise_network();
+		netoworkRAN = true;
+	}
 	printf("Attempting to connect to server...\n");
 	s32 main_server = server_connect();
 	printf("Connection established.\n\n");
@@ -576,34 +586,101 @@ void Update(bool force){
 		die("\n\nDownload of remote version file failed.\n");
 	}
 	
-	printf("Comparing remote version with current version(%s)...\n", WIICRAFT_VERSION);
+	printf("Comparing remote version with current version...\n");
 	
 	// Reading and Compare the file
 	
+	ifstream WC_version;
+	
 	string line;
-	ifstream WC_version("sd:/temp.txt");
+	if(fatDevice == FAT_DEVICE_SD){
+		WC_version.open("sd:/temp.txt");
+	}
+	else if(fatDevice == FAT_DEVICE_USB){
+		WC_version.open("usb:/temp.txt");
+	}
+	
 	if (WC_version.is_open())
 	{
-		while ( getline (WC_version,line) )
-		{
-			cout << line << endl;
+		while ( getline (WC_version,line) ){
+		
 		}
 		WC_version.close();
 	}
 	else{
 		cout << "Unable to read file\n well this is embarrassing...\n";
-		sleep(400000);
-		//remove( "sd:/temp.txt" );
+		sleep(4000);
+		if(fatDevice == FAT_DEVICE_SD){
+			remove( "sd:/temp.txt" );
+		}
+		else if(fatDevice == FAT_DEVICE_USB){
+			remove( "USB:/temp.txt" );
+		}
 		clear();
 		return;
 	} 
 	
-	printf("Current version installed: %s\n Remote version:%s\n", WIICRAFT_VERSION, line.c_str());
-	if(WIICRAFT_VERSION == line){
+	printf("Current version installed: %s\nRemote version: %s\n", WIICRAFT_VERSION, line.c_str());
+	if(WIICRAFT_VERSION == line && force == false){
 		printf("Theres no need to update, you already have the current version.");
-		sleep(400000);
+		sleep(4000);
 	}
-	//remove( "sd:/temp.txt" );
+	else{
+		printf("Updating..");
+		printf(".\n");
+		downloadUpdate();
+	}
+	
+	if(fatDevice == FAT_DEVICE_SD){
+		remove( "sd:/temp.txt" );
+	}
+	else if(fatDevice == FAT_DEVICE_USB){
+		remove( "USB:/temp.txt" );
+	}
+	clear();
+	return;
+}
+
+void downloadUpdate(){
+	printf("Attempting to connect to server...\n");
+	s32 main_server = server_connect();
+	printf("Connection established.\n\n");
+	
+	if(fatDevice == FAT_DEVICE_SD){
+		remove( "sd:/wiicraft/wiicraft.dol" );
+	}
+	else if(fatDevice == FAT_DEVICE_USB){
+		remove( "USB:/wiicraft/wiicraft.dol" );
+	}
+	
+	// Open file
+	FILE *f = fopen("sd:/wiicraft/wiicraft.dol", "wb");
+	
+	// If file can't be created
+	if (f == NULL) {
+		fclose(f);
+		die("There was a problem creating/accessing the temp file.\n");
+	}
+	
+	printf("Downloading Update");
+	
+	char http_request[1000];
+	strcpy(http_request,"GET /wiicraft.dol");
+	strcat(http_request, " HTTP/1.0\r\nHost: filfat.com\r\n\r\n");
+	
+	write_http_reply(main_server, http_request); // Send the HTTP message
+	int result = request_file(main_server, f); // Store the servers reply in our file pointer
+
+	fclose(f);
+	net_close(main_server);
+	
+	if (result == true) {
+		printf("\n\nSuccessfully downloaded the update.\n");
+	}
+	else {
+		die("\n\nDownload of updated failed.\n");
+	}
+	printf("Update successful (you need to reboot WiiCraft)...");
 	clear();
 	return;
 }
