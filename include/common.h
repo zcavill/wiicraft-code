@@ -1,13 +1,5 @@
 /*
-
-Sample Network Send Source
-
-Author: teknecal
-Created: 7/07/2008
-
-Using some source from ftpii v0.0.5
-ftpii Source Code Copyright (C) 2008 Joseph Jordan <joe.ftpii@psychlaw.com.au>
-
+Thanks teknecal for the base source code.
 */
 #ifndef _COMMON_H_
 #define _COMMON_H_
