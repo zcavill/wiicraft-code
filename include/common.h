@@ -12,7 +12,7 @@ extern "C" {
 
 u8 initialise_reset_button();
 
-void die(char *msg);
+void die(const char *msg);
 
 void initialise_network();
 

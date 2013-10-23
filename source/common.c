@@ -62,15 +62,16 @@ s32 write_http_reply(s32 server, char *msg) {
 bool tcp_write (const s32 s, char *buffer, const u32 length) {
     char *p;
     u32 step, left, block, sent;
-    s64 t;
+    s64 time;
     s32 res;
+	(void) time; // Has no effect, but silences the "set but not used" warning
   
     step = 0;
     p = buffer;
     left = length;
     sent = 0;
   
-    t = gettime ();
+    time = gettime ();
     while (left) {
      
         block = left;
@@ -93,7 +94,7 @@ bool tcp_write (const s32 s, char *buffer, const u32 length) {
         p += res;
       
         if ((sent / NET_BUFFER_SIZE) > step) {
-            t = gettime ();
+            time = gettime ();
             step++;
         }
     }
@@ -195,7 +196,7 @@ s32 server_connect() {
 }
 
 
-void die(char *msg) {
+void die(const char *msg) {
 	printf(msg);
 	sleep(5);
 	fatUnmount("sd:");
