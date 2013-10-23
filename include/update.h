@@ -9,28 +9,14 @@
 
 // Copyright (C) 2012-2013	filfat, xerpi, JoostinOnline
 
-#include "map.h"
+/*
+update.h
 
-#ifndef __MAIN_H__
-#define __MAIN_H__
-
-#define FAT_DEVICE_NONE		0
-#define FAT_DEVICE_SD		1
-#define FAT_DEVICE_USB		2
-#define WIICRAFT_VERSION	"070INDEV"
-
-#define	BLACK	"\x1b[30;1m"
-#define	RED	"\x1b[31;1m"
-#define	GREEN	"\x1b[32;1m"
-#define	YELLOW	"\x1b[33;1m"
-#define BLUE    "\x1b[34;1m"
-#define MAGENTA "\x1b[35;1m"
-#define CYAN    "\x1b[36;1m"
-#define	WHITE	"\x1b[37;1m"
-#define CHANGE_COLOR(X)	(printf((X)))
-
-
-extern MAP mainMAP;
-extern int fatDevice;
-
+Update functions
+*/
+#ifndef __UPDATE_H__
+	#define __UPDATE_H__
+	void clear();
+	void downloadUpdate();
+	void Update(bool force);
 #endif

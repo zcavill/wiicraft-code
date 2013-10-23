@@ -9,6 +9,7 @@
 
 // Copyright (C) 2012-2013      filfat, xerpi, JoostinOnline
 
+#include <iostream>
 #include <gccore.h>
 #include <grrlib.h>
 #include <wiiuse/wpad.h>
@@ -21,7 +22,7 @@
 #include <sdcard/wiisd_io.h>
 #include <png.h>
 #include <pngu.h>
-#include <GEMS_WifiWii.h>
+//#include <GEMS_WifiWii.h>
 #include <network.h>
 
 #include "grass_png.h"
@@ -43,22 +44,13 @@
 #include "utils.h"
 #include "devicemounter.h"
 #include "common.h"
+#include "update.h"
 
 //Font:
 #include <ft2build.h>
 #include FT_FREETYPE_H
 //#include "font_ttf.h"
 //Color:
-#define	BLACK	"\x1b[30;1m"
-#define	RED	"\x1b[31;1m"
-#define	GREEN	"\x1b[32;1m"
-#define	YELLOW	"\x1b[33;1m"
-#define BLUE    "\x1b[34;1m"
-#define MAGENTA "\x1b[35;1m"
-#define CYAN    "\x1b[36;1m"
-#define	WHITE	"\x1b[37;1m"
-#define CHANGE_COLOR(X)	(printf((X)))
-
 extern "C" {
         extern void __exception_setreload(int t);
 }
@@ -67,8 +59,6 @@ extern "C" {
 const unsigned int LOCAL_PLAYERS = 4; //i dont think the wii can handle 4 players but who knows ;)
 const unsigned int ONLINE_PLAYERS = 8; //due ram; maybe can increes that later.
 const unsigned int PORT = 8593; //PORT
-
-bool netoworkRAN = false;
 
 int fatDevice = FAT_DEVICE_NONE;
 
@@ -113,12 +103,14 @@ void WIILIGHT_SetLevel(int level){
         light_timeoff.tv_nsec = level_off;
 }
 
+inline void clear(){
+	printf("\x1b[2J");   // Clear
+	printf("\x1b[2;0H"); // Reset cursor position
+}
+
 World world;
 void UpdateCamera();
 void MoveCamera();
-void clear();
-void downloadUpdate();
-void Update(bool force);
 
 int main(int argc, char **argv)
 {       
@@ -245,8 +237,8 @@ int main(int argc, char **argv)
 			}
 			if(selected == 3){
 			//TODO
+			selected = 1;
 			while(true){
-				selected = 1;
 				printf("\x1b[2;0H"); // This resets the position of the console
 				CHANGE_COLOR(GREEN);
 				printf("WiiCraft %s\n", "0.7.0 Indev");
@@ -288,6 +280,9 @@ int main(int argc, char **argv)
 			if(selected == 4){
 				goto EXIT;
 			}
+		}
+		if(pressed & WPAD_BUTTON_B){
+			//DO NOTHING
 		}
 	}
 		
@@ -343,8 +338,7 @@ int main(int argc, char **argv)
                                         break;
                                 }
                                 else if(pressed & WPAD_BUTTON_HOME){*/
-                                        printf("\x1b[2;0H");
-                                        VIDEO_ClearFrameBuffer(rmode,xfb[fb],COLOR_BLACK);
+										clear();
                                         //--------
                                         #ifdef USBGECKO
                                         Debug("--<Main Loop Exited>--");
@@ -545,147 +539,4 @@ void *httpd (void *arg) {
 		}
 	}
 	return NULL;
-}
-
-void Update(bool force){
-	clear();
-	if(netoworkRAN == false){
-		printf("Initializing Network...");
-		initialise_network();
-		netoworkRAN = true;
-	}
-	printf("Attempting to connect to server...\n");
-	s32 main_server = server_connect();
-	printf("Connection established.\n\n");
-	
-	// Open file
-	FILE *f = fopen("sd:/temp.txt", "wb");
-	
-	// If file can't be created
-	if (f == NULL) {
-		fclose(f);
-		die("There was a problem creating/accessing the temp file.\n");
-	}
-	
-	printf("Checking version with remote server...\n");
-	
-	char http_request[1000];
-	strcpy(http_request,"GET /WiiCraft.txt");
-	strcat(http_request, " HTTP/1.0\r\nHost: filfat.com\r\n\r\n");
-	
-	write_http_reply(main_server, http_request); // Send the HTTP message
-	int result = request_file(main_server, f); // Store the servers reply in our file pointer
-
-	fclose(f);
-	net_close(main_server);
-	
-	if (result == true) {
-		printf("\n\nSuccessfully downloaded the version file.\n");
-	}
-	else {
-		die("\n\nDownload of remote version file failed.\n");
-	}
-	
-	printf("Comparing remote version with current version...\n");
-	
-	// Reading and Compare the file
-	
-	ifstream WC_version;
-	
-	string line;
-	if(fatDevice == FAT_DEVICE_SD){
-		WC_version.open("sd:/temp.txt");
-	}
-	else if(fatDevice == FAT_DEVICE_USB){
-		WC_version.open("usb:/temp.txt");
-	}
-	
-	if (WC_version.is_open())
-	{
-		while ( getline (WC_version,line) ){
-		
-		}
-		WC_version.close();
-	}
-	else{
-		cout << "Unable to read file\n well this is embarrassing...\n";
-		sleep(4000);
-		if(fatDevice == FAT_DEVICE_SD){
-			remove( "sd:/temp.txt" );
-		}
-		else if(fatDevice == FAT_DEVICE_USB){
-			remove( "USB:/temp.txt" );
-		}
-		clear();
-		return;
-	} 
-	
-	printf("Current version installed: %s\nRemote version: %s\n", WIICRAFT_VERSION, line.c_str());
-	if(WIICRAFT_VERSION == line && force == false){
-		printf("Theres no need to update, you already have the current version.");
-		sleep(4000);
-	}
-	else{
-		printf("Updating..");
-		printf(".\n");
-		downloadUpdate();
-	}
-	
-	if(fatDevice == FAT_DEVICE_SD){
-		remove( "sd:/temp.txt" );
-	}
-	else if(fatDevice == FAT_DEVICE_USB){
-		remove( "USB:/temp.txt" );
-	}
-	clear();
-	return;
-}
-
-void downloadUpdate(){
-	printf("Attempting to connect to server...\n");
-	s32 main_server = server_connect();
-	printf("Connection established.\n\n");
-	
-	if(fatDevice == FAT_DEVICE_SD){
-		remove( "sd:/wiicraft/wiicraft.dol" );
-	}
-	else if(fatDevice == FAT_DEVICE_USB){
-		remove( "USB:/wiicraft/wiicraft.dol" );
-	}
-	
-	// Open file
-	FILE *f = fopen("sd:/wiicraft/wiicraft.dol", "wb");
-	
-	// If file can't be created
-	if (f == NULL) {
-		fclose(f);
-		die("There was a problem creating/accessing the temp file.\n");
-	}
-	
-	printf("Downloading Update");
-	
-	char http_request[1000];
-	strcpy(http_request,"GET /wiicraft.dol");
-	strcat(http_request, " HTTP/1.0\r\nHost: filfat.com\r\n\r\n");
-	
-	write_http_reply(main_server, http_request); // Send the HTTP message
-	int result = request_file(main_server, f); // Store the servers reply in our file pointer
-
-	fclose(f);
-	net_close(main_server);
-	
-	if (result == true) {
-		printf("\n\nSuccessfully downloaded the update.\n");
-	}
-	else {
-		die("\n\nDownload of updated failed.\n");
-	}
-	printf("Update successful (you need to reboot WiiCraft)...");
-	clear();
-	return;
-}
-
-inline void clear(){
-	printf("\x1b[2J");   // Clear
-	printf("\x1b[2;0H"); // Reset cursor position
 }
