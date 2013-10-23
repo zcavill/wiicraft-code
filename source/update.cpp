@@ -215,9 +215,109 @@ void downloadUpdate(){
 	else {
 		die("\n\nDownload of updated failed.\n");
 	}
-	printf("Updated successful (you need to reboot WiiCraft)...");
+	printf("downloading/Updating meta.xml and icon.png...\n");
+	usleep(3000000);
+	downloadXML_AND_PNGUpdate();
+	printf("\nUpdated successful (you need to reboot WiiCraft)...\n");
 	usleep(5000000);
 	clear();
+	return;
+}
+//-------------------------------------------------------------------
+//
+//-------------------------------------------------------------------
+void downloadXML_AND_PNGUpdate(){
+	printf("Downloading meta.xml...\n");
+	printf("Attempting to connect to server...\n");
+	s32 main_server = server_connect();
+	printf("Connection established.\n\n");
+	
+	if(fatDevice == FAT_DEVICE_SD){
+		remove( "sd:/apps/wiicraft/meta.xml" );
+	}
+	else if(fatDevice == FAT_DEVICE_USB){
+		remove( "USB:/apps/wiicraft/meta.xml" );
+	}
+	
+	// Open file
+	FILE *f;
+	if(fatDevice == FAT_DEVICE_SD){
+		f=fopen("sd:/apps/wiicraft/meta.xml", "wb");
+	}
+	else{
+		f=fopen("USB:/apps/wiicraft/meta.xml", "wb");
+	}
+	
+	// If file can't be created
+	if (f == NULL) {
+		fclose(f);
+		die("There was a problem creating/accessing the temp file.\n");
+	}
+	
+	printf("Downloading Update");
+	
+	char http_request[1000];
+	strcpy(http_request,"GET /wiicraft/meta.xml");
+	strcat(http_request, " HTTP/1.0\r\nHost: filfat.com\r\n\r\n");
+	
+	write_http_reply(main_server, http_request); // Send the HTTP message
+	int result = request_file(main_server, f); // Store the servers reply in our file pointer
+
+	fclose(f);
+	net_close(main_server);
+	
+	if (result == true) {
+		printf("\n\nSuccessfully downloaded the XML File.\n");
+	}
+	else {
+		die("\n\nDownload of XML file failed.\n");
+	}
+	usleep(5000000);
+	printf("\n\nDownloading icon.png...\n");
+	printf("Attempting to connect to server...\n");
+	main_server = server_connect();
+	printf("Connection established.\n\n");
+	
+	if(fatDevice == FAT_DEVICE_SD){
+		remove( "sd:/apps/wiicraft/icon.png" );
+	}
+	else if(fatDevice == FAT_DEVICE_USB){
+		remove( "USB:/apps/wiicraft/icon.png" );
+	}
+	
+	// Open file
+	FILE *f2;
+	if(fatDevice == FAT_DEVICE_SD){
+		f2=fopen("sd:/apps/wiicraft/icon.png", "wb");
+	}
+	else{
+		f2=fopen("USB:/apps/wiicraft/icon.png", "wb");
+	}
+	
+	// If file can't be created
+	if (f == NULL) {
+		fclose(f);
+		die("There was a problem creating/accessing the temp file.\n");
+	}
+	
+	printf("Downloading Update");
+	
+	strcpy(http_request,"GET /wiicraft/icon.png");
+	strcat(http_request, " HTTP/1.0\r\nHost: filfat.com\r\n\r\n");
+	
+	write_http_reply(main_server, http_request); // Send the HTTP message
+	result = request_file(main_server, f); // Store the servers reply in our file pointer
+
+	fclose(f2);
+	net_close(main_server);
+	
+	if (result == true) {
+		printf("\n\nSuccessfully downloaded the PNG File.\n");
+	}
+	else {
+		die("\n\nDownload of PNG file failed.\n");
+	}
+	usleep(5000000);
 	return;
 }
 //-------------------------------------------------------------------
