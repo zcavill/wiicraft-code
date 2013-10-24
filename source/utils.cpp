@@ -69,9 +69,6 @@ u32 DetectInput(u8 DownOrHeld)
 		if (pressed & WPAD_CLASSIC_BUTTON_DOWN) pressed |= WPAD_BUTTON_DOWN;
 		if (pressed & WPAD_CLASSIC_BUTTON_LEFT) pressed |= WPAD_BUTTON_LEFT;
 		if (pressed & WPAD_CLASSIC_BUTTON_RIGHT) pressed |= WPAD_BUTTON_RIGHT;
-		#ifdef USBGECKO
-		Debug("		Button layout defined");
-		#endif
 
 	}
 
