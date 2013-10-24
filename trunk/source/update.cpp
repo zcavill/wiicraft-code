@@ -16,6 +16,7 @@
 #include "update.h"
 #include "main.h"
 #include "utils.h"
+#include "update.h"
 
 bool netoworkRAN = false;
 s8 selected = 1;
@@ -27,13 +28,28 @@ void Update(bool force){
 	clear();
 	if(netoworkRAN == false){
 		printf("Initializing Network...");
+		#ifdef USBGECKO
+		Debug("Initializing Network...");
+		#endif
 		initialise_network();
+		#ifdef USBGECKO
+		Debug("initialise_network() Done");
+		#endif
 		netoworkRAN = true;
 		fatInitDefault();
+		#ifdef USBGECKO
+		Debug("fatInitDefault() Done");
+		#endif
 	}
 	printf("Attempting to connect to server...\n");
+	#ifdef USBGECKO
+	Debug("UPDATE:		Attempting to connect to server...");
+	#endif
 	s32 main_server = server_connect();
 	printf("Connection established.\n\n");
+	#ifdef USBGECKO
+	Debug("UPDATE:		Connection established.");
+	#endif
 	clear();
 	while(true) {
 		printf("\x1b[2;0H");
@@ -56,10 +72,16 @@ void Update(bool force){
 		if (pressed & WPAD_BUTTON_A) {
 			if(selected == 1) {
 				fatDevice = FAT_DEVICE_SD;
+				#ifdef USBGECKO
+				Debug("UPDATE:		fatDevice = FAT_DEVICE_SD.");
+				#endif
 				goto NEXT;
 			}
 			if(selected == 2) {
 				fatDevice = FAT_DEVICE_USB;
+				#ifdef USBGECKO
+				Debug("UPDATE:		fatDevice = FAT_DEVICE_USB.");
+				#endif
 				goto NEXT;
 			}
 		}
@@ -67,6 +89,9 @@ void Update(bool force){
 	
 	
 	// Open file
+	#ifdef USBGECKO
+	Debug("UPDATE:		Creating temp.txt...");
+	#endif
 	NEXT:FILE *f;
 	if(fatDevice == FAT_DEVICE_SD){
 		f=fopen("sd:/temp.txt", "wb");
@@ -78,6 +103,9 @@ void Update(bool force){
 	// If file can't be created
 	if (f == NULL) {
 		fclose(f);
+		#ifdef USBGECKO
+		Debug("UPDATE:		There was a problem creating/accessing the temp file.");
+		#endif
 		die("There was a problem creating/accessing the temp file.\n");
 	}
 	
