@@ -12,11 +12,13 @@
 #include <png.h>
 #include <pngu.h>
 #include <network.h>
+
 #include "common.h"
 #include "update.h"
 #include "main.h"
 #include "utils.h"
 #include "update.h"
+#include "debug.h"
 
 bool netoworkRAN = false;
 s8 selected = 1;
@@ -28,18 +30,12 @@ void Update(bool force){
 	clear();
 	if(netoworkRAN == false){
 		printf("Initializing Network...");
-		#ifdef USBGECKO
 		Debug("Initializing Network...");
-		#endif
 		initialise_network();
-		#ifdef USBGECKO
 		Debug("initialise_network() Done");
-		#endif
 		netoworkRAN = true;
 		fatInitDefault();
-		#ifdef USBGECKO
 		Debug("fatInitDefault() Done");
-		#endif
 	}
 	printf("Attempting to connect to server...\n");
 	#ifdef USBGECKO
