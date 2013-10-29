@@ -37,18 +37,12 @@
 using namespace std;
 
 MAP::MAP(){
-	#ifdef USBGECKO
 	Debug("Map() Started");
-	#endif
 	createMapArray();
-	#ifdef USBGECKO
 	Debug("Done With createMapArray();");
-	#endif
 	generateMap();
-	#ifdef USBGECKO
 	Debug("Done With generateMap();");
 	Debug("Map() Ended");
-	#endif
 }
 
 MAP::~MAP(){

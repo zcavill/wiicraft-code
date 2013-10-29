@@ -16,12 +16,15 @@
 #include <ogc/usbgecko.h>
 #include <ogc/exi.h>
 
+#include "debug.h"
+
 /*
 
 Debug, will write debug information to sd and/or gecko.... as debug file is open/closed it will be VERY SLOW
 
 */
 
+#ifdef USBGECKO
 #define DEBUG_MAXCACHE 32
 static char dbgfile[64];
 static char *cache[DEBUG_MAXCACHE];
@@ -29,10 +32,10 @@ static char *cache[DEBUG_MAXCACHE];
 static int started = 0;
 static int filelog = 0;
 static int geckolog = 0;
+#endif
 
-s32 DebugStart (bool gecko, const char *fn)
-	{
-
+s32 DebugStart (bool gecko, const char *fn) {
+	#ifdef USBGECKO
 	filelog = 0;
 	started = 0;
 
@@ -55,16 +58,17 @@ s32 DebugStart (bool gecko, const char *fn)
 		started = 1;
 
 	return started;
-	}
+	#endif
+	return 0;
+}
 
-void DebugStop (void)
-	{
+#ifdef USBGECKO
+void DebugStop (void) {
 	filelog = 0;
 	started = 2;
-	}
+}
 
-void Debug (const char *text, ...)
-	{
+void Debug (const char *text, ...) {
 	if (!started || text == NULL) return;
 
 	int i;
@@ -91,33 +95,26 @@ void Debug (const char *text, ...)
 		f = fopen(dbgfile, "ab");
 
 	//if file cannot be opened, cannot open the file, maybe filesystem unmounted or nand emu active... use cache
-	if (f)
-		{
-		for (i = 0; i < DEBUG_MAXCACHE; i++)
-			{
-			if (cache[i] != NULL)
-				{
+	if (f) {
+		for (i = 0; i < DEBUG_MAXCACHE; i++) {
+			if (cache[i] != NULL) {
 				fwrite (cache[i], 1, strlen(mex), f );
 				free (cache[i]);
 				cache[i] = NULL;
-				}
 			}
+		}
 		fwrite (mex, 1, strlen(mex), f );
 		fclose(f);
-		}
-	else
-		{
-		for (i = 0; i < DEBUG_MAXCACHE; i++)
-			{
-			if (cache[i] == NULL)
-				{
+	} else {
+		for (i = 0; i < DEBUG_MAXCACHE; i++) {
+			if (cache[i] == NULL) {
 				cache[i] = calloc (strlen(mex) + 1, 1);
 				strcpy (cache[i], mex);
 				break;
-				}
 			}
 		}
 	}
+}
 
 static char ascii(char s)
 {
@@ -126,8 +123,7 @@ static char ascii(char s)
 	return s;
 }
 
-void gprintf (const char *format, ...)
-{
+void gprintf (const char *format, ...) {
 	char * tmp = NULL;
 	va_list va;
 	va_start(va, format);
@@ -142,8 +138,7 @@ void gprintf (const char *format, ...)
 		free(tmp);
 }
 
-void Debug_hexdump (void *d, int len)
-{
+void Debug_hexdump (void *d, int len) {
 	u8 *data;
 	int i, off;
 	data = (u8*) d;
@@ -151,8 +146,7 @@ void Debug_hexdump (void *d, int len)
 	gprintf("\n       0  1  2  3  4  5  6  7  8  9  A  B  C  D  E  F  0123456789ABCDEF");
 	gprintf("\n====  ===============================================  ================\n");
 
-	for (off = 0; off < len; off += 16)
-	{
+	for (off = 0; off < len; off += 16) {
 		gprintf("%04x  ", off);
 		for (i = 0; i < 16; i++)
 			if ((i + off) >= len)
@@ -167,3 +161,4 @@ void Debug_hexdump (void *d, int len)
 		gprintf("\n");
 	}
 }
+#endif
