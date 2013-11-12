@@ -126,36 +126,21 @@ void InitVideo()
 	VIDEO_Init();
 
 	rmode = VIDEO_GetPreferredMode(NULL);
-	#ifdef USBGECKO
 	Debug("Video:		rmode Loaded into memory");
-	#endif
-
 	
 	xfb[0] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-	#ifdef USBGECKO
 	Debug("Video:		xfb[0] Loaded into memory");
-	#endif
 	xfb[1] = (u32 *)MEM_K0_TO_K1(SYS_AllocateFramebuffer(rmode));
-	#ifdef USBGECKO
 	Debug("Video:		xfb[1] Loaded into memory");
-	#endif
 	
 	VIDEO_Configure (rmode);
-	#ifdef USBGECKO
 	Debug("Video:		Configured rmode\n");
-	#endif
 	VIDEO_SetNextFramebuffer(xfb[fb]);
-	#ifdef USBGECKO
 	Debug("Video:		Changed Framebuffer to xfb[fb]");
-	#endif
 	VIDEO_SetBlack(FALSE);
-	#ifdef USBGECKO
 	Debug("Video:		Set video BlackMode to false");
-	#endif
 	VIDEO_Flush();
-	#ifdef USBGECKO
 	Debug("Video:		Flushed Video");
-	#endif
 	VIDEO_WaitVSync();
 	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
 	fb ^= 1;
