@@ -18,7 +18,7 @@
 #include "libwiigui/gui.h"
 
 static int whichfb = 0; // Switch
-static GXRModeObj *vmode; // Menu video mode
+//static GXRModeObj *vmode; // Menu video mode
 static Mtx GXmodelView2D;
 int screenheight;
 int screenwidth;

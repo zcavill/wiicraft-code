@@ -28,7 +28,7 @@ void DebugStop (void);
 void Debug(const char *text, ...);
 void Debug_hexdump(void *d, int len);
 void Debug_hexdumplog (void *d, int len);
-void gprintf (const char *format, ...);
+void gprintf(const char *format, ...);
 
 #else
  
