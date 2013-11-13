@@ -12,11 +12,14 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include <string.h>
 #include <ogc/usbgecko.h>
 #include <ogc/exi.h>
 
 #include "debug.h"
+
+#define ascii(X) (((unsigned)((X)-0x20) < 0x5F) ? (X) : '.') // replace X<0x20 and X>0x7E with '.'
 
 /*
 
@@ -25,37 +28,20 @@ Debug, will write debug information to sd and/or gecko.... as debug file is open
 */
 
 #ifdef USBGECKO
-#define DEBUG_MAXCACHE 32
-static char dbgfile[64];
-static char *cache[DEBUG_MAXCACHE];
-
 static int started = 0;
-static int filelog = 0;
 static int geckolog = 0;
+static FILE * fdebug = NULL;
 #endif
 
-s32 DebugStart (bool gecko, const char *fn) {
+s32 DebugStart (bool gecko, const char *dbgfile) {
 	#ifdef USBGECKO
-	filelog = 0;
 	started = 0;
-
-	sprintf (dbgfile, fn);
 
 	geckolog = usb_isgeckoalive (EXI_CHANNEL_1);
 
-	// check if the file exist
-	FILE * f = NULL;
-	f = fopen(dbgfile, "rb");
-	if (f)
-		{
-		filelog = 1;
-		fclose (f);
-		}
-
-	memset (cache, 0, sizeof(cache));
-
-	if (filelog || geckolog)
-		started = 1;
+	// Open or create dbgfile
+	fdebug = fopen(dbgfile, "wb");  // File will be cleared if it already exists.
+	if (fdebug || geckolog) started = 1;
 
 	return started;
 	#endif
@@ -64,63 +50,33 @@ s32 DebugStart (bool gecko, const char *fn) {
 
 #ifdef USBGECKO
 void DebugStop (void) {
-	filelog = 0;
-	started = 2;
+	if (fdebug) fclose (fdebug);
+	fdebug = NULL;
+	started = 0;
+	return;
 }
 
 void Debug (const char *text, ...) {
 	if (!started || text == NULL) return;
 
-	int i;
-	char mex[1024];
-	FILE * f = NULL;
+	char mex[2048] = {0};
 
 	va_list argp;
-	va_start (argp, text);
-	vsprintf (mex, text, argp);
-	va_end (argp);
-
-	strcat (mex, "\r\n");
-
-	if (geckolog)
-		{
-		usb_sendbuffer( EXI_CHANNEL_1, mex, strlen(mex) );
-		//usb_flush(EXI_CHANNEL_1);
-		}
-	if (started == 2) return;
-	if (filelog == 0) return;
-
-	// If a message start with '@', do not open... it will be cached cache it...
-	if (mex[0] != '@')
-		f = fopen(dbgfile, "ab");
-
-	//if file cannot be opened, cannot open the file, maybe filesystem unmounted or nand emu active... use cache
-	if (f) {
-		for (i = 0; i < DEBUG_MAXCACHE; i++) {
-			if (cache[i] != NULL) {
-				fwrite (cache[i], 1, strlen(mex), f );
-				free (cache[i]);
-				cache[i] = NULL;
-			}
-		}
-		fwrite (mex, 1, strlen(mex), f );
-		fclose(f);
-	} else {
-		for (i = 0; i < DEBUG_MAXCACHE; i++) {
-			if (cache[i] == NULL) {
-				cache[i] = calloc (strlen(mex) + 1, 1);
-				strcpy (cache[i], mex);
-				break;
-			}
-		}
+	va_start(argp, text);
+	if (geckolog) vsnprintf(mex, sizeof(mex)-1, text, argp);
+	if (fdebug) {
+		vfprintf(fdebug, text, argp);
+		fprintf(fdebug, "\r\n");
+		fflush(fdebug);
 	}
-}
+	va_end(argp);
 
-static char ascii(char s)
-{
-	if (s < 0x20) return '.';
-	if (s > 0x7E) return '.';
-	return s;
+	if (geckolog) {
+		strncat(mex, "\n", sizeof(mex)-1);
+		usb_sendbuffer(EXI_CHANNEL_1, mex, strlen(mex));
+		usb_flush(EXI_CHANNEL_1);
+		usleep (500);
+	}
 }
 
 void gprintf (const char *format, ...) {
