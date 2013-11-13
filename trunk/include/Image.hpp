@@ -7,7 +7,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License 3.0 for more details.
 
-// Copyright (C) 2012-2013	filfat, xerpi, JoostinOnline
+// Copyright (C) 2012-2013      filfat, xerpi, JoostinOnline
 
 #ifndef _IMAGE_HPP_
 #define _IMAGE_HPP_
@@ -21,29 +21,29 @@ class Image
 {
 public:
 //Constructor
-	//From file
-		Image(char *filename) {loadFromFile(filename);}
-	//From buffer
-		Image(uint8_t *buf_data)  {loadFromBuffer(buf_data);}
+        //From file
+                Image(char *filename) {loadFromFile(filename);}
+        //From buffer
+                Image(uint8_t *buf_data)  {loadFromBuffer(buf_data);}
 //Destructor
-	~Image();
+        ~Image();
 //Methods
-	//Clears the image
-		void clear();
-	//Loads from file
-		int loadFromFile(char *filename);
-	//Loads from buffer
-		int loadFromBuffer(uint8_t *buf_data);
-	//Sets to the GX
-		void setGX(int texmap) {GX_LoadTexObj(&texObj, texmap);}
-	//Gets image width
-		int getWidth() {return width;}
-	//Gets image height
-		int getHeight() {return height;}
+        //Clears the image
+                void clear();
+        //Loads from file
+                int loadFromFile(char *filename);
+        //Loads from buffer
+                int loadFromBuffer(uint8_t *buf_data);
+        //Sets to the GX
+                void setGX(int texmap) {GX_LoadTexObj(&texObj, texmap);}
+        //Gets image width
+                int getWidth() {return width;}
+        //Gets image height
+                int getHeight() {return height;}
 //Variables
-	uint8_t  *data;
-	uint32_t width, height;
-	GXTexObj texObj;
+        uint8_t  *data;
+        uint32_t width, height;
+        GXTexObj texObj;
 };
 
 
