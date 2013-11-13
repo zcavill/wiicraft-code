@@ -17,8 +17,8 @@ include $(DEVKITPPC)/wii_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/core
-DATA		:=	data  
+SOURCES		:=	source source/core source/libwiigui
+DATA		:=	data  data/Keybaord
 INCLUDES	:=  include
 
 #---------------------------------------------------------------------------------
@@ -34,8 +34,8 @@ LDFLAGS	=	-g $(MACHDEP) -Wl,-Map,$(notdir $@).map
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
 LIBS	:= -lfat -lpngu -lpng -lwiiuse -lbte -logc -lm -lz
-LIBS	+= -ljpeg -lasnd -lmad -fpermissive -lbte -logc -lm
-LIBS	+= -lfat -lwiiuse -lbte -lwiikeyboard -logc -lfreetype
+LIBS	+= -lpngu -ljpeg -lasnd -lmad -fpermissive -lbte -logc -lm
+LIBS	+= -lfat -lwiiuse -lbte -lwiikeyboard -logc -lFreeTypeGX -lfreetype
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
