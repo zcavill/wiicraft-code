@@ -6,7 +6,6 @@
 #include <mp3player.h>
 #include <gccore.h>
 #include <wiiuse/wpad.h>
-#include <grrlib.h>
 #include "utils.h"
 #include "debug.h"
 

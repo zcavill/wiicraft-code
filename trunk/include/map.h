@@ -29,7 +29,7 @@
 #include <gccore.h>
 #include <wiiuse/wpad.h>
 #include <fat.h>
-#include <zlib.h>
+//#include <zlib.h>
 #include <vector>
 
 using namespace std;
