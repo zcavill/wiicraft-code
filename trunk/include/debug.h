@@ -15,7 +15,7 @@
 #if defined(HW_RVL)
 
 //Comment next two lines to speed up the code:
-//#define USBGECKO
+#define USBGECKO
 
 #ifdef __cplusplus
 extern "C" {
