@@ -11,11 +11,11 @@
 
 void Initialize(void){
 	fatInitDefault();	
-	DebugStart(true, "sd://wiicraft.log");
+	DebugStart(true, "sd://WiiCraft.log");
 	Debug("\n");
 	Debug("\n");
 	Debug("\n");
-	Debug("-------------------[Wiicraft Debug]----------------------");
+	Debug("-------------------[WiiCraft Debug Log]----------------------");
 	InitVideo();
 	Debug("InitVideo() Done");
 	InitPad();
