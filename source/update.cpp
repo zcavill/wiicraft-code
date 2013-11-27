@@ -177,6 +177,13 @@ void Update(bool force){
 		usleep(5000000);
 	}
 	else{
+		printf("Changelog:\n");
+		changelog();
+		printf("Press A To Continue!\n");
+		while(!DetectInput(DI_BUTTONS_DOWN)){
+		
+		}
+		
 		printf("Updating..");
 		printf(".\n");
 		downloadUpdate();
@@ -347,7 +354,85 @@ void downloadXML_AND_PNGUpdate(){
 //-------------------------------------------------------------------
 //
 //-------------------------------------------------------------------
+
 inline void clear(){
 	printf("\x1b[2J");   // Clear
 	printf("\x1b[2;0H"); // Reset cursor position
+}
+
+//-------------------------------------------------------------------
+//
+//-------------------------------------------------------------------
+void changelog(){
+	FILE *f27;
+	if(fatDevice == FAT_DEVICE_SD){
+		f27=fopen("sd:/temp.txt", "wb");
+	}
+	else{
+		f27=fopen("USB:/temp.txt", "wb");
+	}
+	
+	// If file can't be created
+	if (f27 == NULL) {
+		fclose(f27);
+		#ifdef USBGECKO
+		Debug("UPDATE:		There was a problem creating/accessing the temp file.");
+		#endif
+		die("There was a problem creating/accessing the temp file.\n");
+	}
+	
+	s32 main_server = server_connect();
+	if(fatDevice == FAT_DEVICE_SD){
+		remove( "sd:/temp.txt" );
+	}
+	else if(fatDevice == FAT_DEVICE_USB){
+		remove( "USB:/temp.txt" );
+	}
+	char http_request[1000];
+	strcpy(http_request,"GET /wiicraft/changelog.txt");
+	strcat(http_request, " HTTP/1.0\r\nHost: filfat.com\r\n\r\n");
+	
+	write_http_reply(main_server, http_request); // Send the HTTP message
+	int result = request_file(main_server, f27); // Store the servers reply in our file pointer
+
+	fclose(f27);
+	net_close(main_server);
+	
+	if (result == true) {
+	}
+	else {
+		die("\n\nERROR: Cant Download The Changelog!\n");
+	}
+	
+	// Reading and Compare the file
+	
+	ifstream WC_version;
+	
+	string line;
+	if(fatDevice == FAT_DEVICE_SD){
+		WC_version.open("sd:/temp.txt");
+	}
+	else if(fatDevice == FAT_DEVICE_USB){
+		WC_version.open("usb:/temp.txt");
+	}
+	
+	if (WC_version.is_open())
+	{
+		while ( getline (WC_version,line) ){
+			printf("%s\n", line.c_str());
+		}
+		WC_version.close();
+	}
+	else{
+		cout << "ERROR: Somthing Went Wrong!\n";
+		usleep(5000000);;
+		if(fatDevice == FAT_DEVICE_SD){
+			remove( "sd:/temp.txt" );
+		}
+		else if(fatDevice == FAT_DEVICE_USB){
+			remove( "USB:/temp.txt" );
+		}
+		clear();
+		return;
+	}
 }

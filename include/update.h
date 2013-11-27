@@ -20,4 +20,5 @@ Update functions
 	void downloadUpdate();
 	void Update(bool force);
 	void downloadXML_AND_PNGUpdate();
+	void changelog();
 #endif
