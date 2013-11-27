@@ -44,10 +44,13 @@
 #include "common.h"
 #include "update.h"
 
+#include "FreeTypeGX.h"
+#include "Metaphrasis.h"
+
 //Font:
 #include <ft2build.h>
 #include FT_FREETYPE_H
-//#include "font_ttf.h"
+#include "rursus_compact_mono_ttf.h"
 //Color:
 extern "C" {
                 extern void __exception_setreload(int t);
@@ -124,7 +127,7 @@ int main(int argc, char **argv)
                 //WIILIGHT_Init();
                 WIILIGHT_SetLevel(255);
                 WIILIGHT_TurnOn();
-                
+				   
                 //MAP mainMAP;
                 
                 //char test;
@@ -151,10 +154,19 @@ int main(int argc, char **argv)
                 //ADD OTHER INIT'S HERE
                 
                 Debug("All Inits is Done");
-                
+				
                 //Menu
                 s8 selected = 1; // Make sure that "selected" is defined as 1-6
                 WIILIGHT_TurnOff();
+				
+				
+				/*FreeTypeGX *fontSystem = new FreeTypeGX();
+				fontSystem->loadFont(rursus_compact_mono_ttf, rursus_compact_mono_ttf_size, 64);			
+				while(1){
+					fontSystem->drawText(10, 25, _TEXT("FreeTypeGX Rocks!"));
+				}*/
+				
+				
                 goto mainMenu;
         mainMenu:selected = 1;
         while(true) {
